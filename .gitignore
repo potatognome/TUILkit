@@ -51,3 +51,4 @@ build/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+.git_archived_*
