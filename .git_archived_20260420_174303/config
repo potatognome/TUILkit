@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[remote "origin"]
+	url = https://github.com/potatognome/tUilKit.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	gk-last-accessed = 2026-02-11T00:06:21.282Z
+	gk-last-modified = 2026-01-23T13:00:29.950Z
+	merge = refs/heads/main

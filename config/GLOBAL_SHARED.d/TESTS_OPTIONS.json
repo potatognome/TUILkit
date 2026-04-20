@@ -1,0 +1,9 @@
+{
+    "TESTS_OPTIONS"                 : {        
+        "TEST_LOGS_PREFIX"          : ["{TEST_SCRIPT_NAME}", " - "],
+        "TEST_LOGS_FOLDER"          : ".testlogs/{PROJECT_NAME}/",
+        "TIME_STAMP_TEST_LOGS"      : true,
+        "TIME_STAMP_TEST_FOLDERS"   : true,
+        "TIME_STAMP_TEST_FILES"     : true
+    }
+}

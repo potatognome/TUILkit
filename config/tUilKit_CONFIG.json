@@ -1,0 +1,121 @@
+{
+    "INFO": {
+        "PROJECT_NAME"        : "tUilKit",
+        "PROJECT_FOLDER"      : "tUilKit",
+        "PROJECT_DESCRIPTION" : "Core utility toolkit for CLI apps: colour management, filesystem helpers, JSON config, dataframe utilities, logging, a command line menu interface, and testing framework.",
+        "AUTHOR"              : "Daniel Austin <the.potato.gnome@gmail.com>",
+        "VERSION"             : "0.4.0",
+        "MAIN_ENTRY_POINT"    : "src/tUilKit/__init__.py"
+    },
+    "ROOTS": {
+        "PROJECT"    : "./Core/tUilKit",
+        "WORKSPACE"  : "."
+    },
+    "ROOT_MODES": {
+        "ROOT_MODES: project"    : "Paths are relative to the project root.",
+        "ROOT_MODES: workspace"  : "Paths are relative to the workspace root.",
+        "CONFIG"                 : "workspace",
+        "LOGS"                   : "workspace",
+        "INPUTS"                 : "workspace",
+        "OUTPUTS"                : "workspace",
+        "TEST_CONFIG"            : "workspace",
+        "TEST_LOGS"              : "workspace",
+        "TEST_INPUTS"            : "workspace",
+        "TEST_OUTPUTS"           : "workspace"
+    },
+    "PATHS": {
+        "CONFIG": "config/",
+        "LOGS"  : ".logs/tUilKit/",
+        "INPUTS": ".projects_data/inputs/",
+        "OUTPUTS": ".projects_data/outputs/",
+        "TEST_CONFIG": "config/",
+        "TEST_LOGS": ".test_logs/tUilKit/",
+        "TEST_INPUTS": ".tests_data/inputs/",
+        "TEST_OUTPUTS": ".tests_data/outputs/"
+    },
+    "SHARED_CONFIG": {
+        "ENABLED": true,
+        "PATH": "GLOBAL_SHARED.d/",
+        "FILES": {
+            "COLOURS": "COLOURS.json",
+            "BORDER_PATTERNS": "BORDER_PATTERNS.json",
+            "TESTS_OPTIONS": "TESTS_OPTIONS.json",
+            "TIME_STAMP_OPTIONS": "TIME_STAMP_OPTIONS.json"
+        }
+    },
+    "ALT_CONFIG": {
+        "ENABLED": false,
+        "PATH": "",
+        "FILES": {
+            "COLOURS": "",
+            "BORDER_PATTERNS": "",
+            "TESTS_OPTIONS": "",
+            "TIME_STAMP_OPTIONS": ""
+        }
+    },
+    "LOG_FILES": {
+        "MASTER": "tUilKit_MASTER.log",
+        "SESSION": "tUilKit_SESSION.log",
+        "RUNTIME": "tUilKit_RUNTIME.log",
+        "ERROR": "tUilKit_ERROR.log",
+        "DEBUG": "tUilKit_DEBUG.log",
+        "WARNING": "tUilKit_WARNING.log",
+        "INIT": "tUilKit_INIT.log",
+        "FS": "tUilKit_FS.log",
+        "DATABASE": "tUilKit_DATABASE.log"
+    },
+    "LOG_CATEGORIES": {
+        "default": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME"
+        ],
+        "error": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "ERROR"
+        ],
+        "fs": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "FS"
+        ],
+        "init": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "INIT"
+        ],
+        "debug": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "DEBUG"
+        ],
+        "warning": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "WARNING"
+        ],
+        "database": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "DATABASE"
+        ],
+        "all": [
+            "MASTER",
+            "SESSION",
+            "RUNTIME",
+            "ERROR",
+            "FS",
+            "INIT",
+            "DEBUG",
+            "WARNING",
+            "DATABASE"
+        ]
+    }
+}

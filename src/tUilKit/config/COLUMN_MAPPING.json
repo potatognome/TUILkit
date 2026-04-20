@@ -1,0 +1,7 @@
+{
+    "COLUMN_MAPPING": {
+        "id": "ID",
+        "name": "NAME",
+        "date": "DATE"
+    }
+}

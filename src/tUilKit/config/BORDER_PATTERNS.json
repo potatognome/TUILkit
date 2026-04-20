@@ -1,0 +1,7 @@
+{
+    "BORDER_PATTERNS": {
+        "default": "====",
+        "dashed": "- - - -",
+        "star": "* * * *"
+    }
+}

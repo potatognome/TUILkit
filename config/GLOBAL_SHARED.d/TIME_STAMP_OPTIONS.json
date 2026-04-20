@@ -1,0 +1,9 @@
+{
+    "TIME_STAMP_OPTIONS"    : {
+        "FORMAT"            : "%Y%m%d_%H%M%S",
+        "LOGS"              : true,
+        "FILES"             : false,
+        "FOLDERS"           : false
+ }
+}
+ 
