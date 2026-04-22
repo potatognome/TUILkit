@@ -29,7 +29,10 @@ Repository = "https://github.com/potatognome/tUilKit"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["tUilKit"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["tUilKit*"]
 
 [tool.setuptools.package-data]
 "tUilKit.config" = ["*.json"]
