@@ -3,21 +3,14 @@ tUilKit
 # Project Name
 tUilKit
 
-**Current version: 1.2.0**
+**Current version: 0.5.0**
 
-## Recent Enhancements (v1.2.0)
+## Recent Enhancements (v0.5.0)
 
-- **Terminal UI Modules**: Added `terminal/cursor.py`, `terminal/chroma.py`, and `terminal/canvas.py` for robust ANSI cursor movement, colour/styling, and multi-line in-place rendering. Enables live-updating status tables and advanced CLI UIs.
-tUilKit now includes:
-- **/terminal**: Pure Python modules for ANSI cursor movement, colour/styling, and multi-line rendering (Canvas, Cursor, Chroma)
-
-- **Modular Workspace Log/Test Log Path Resolution**: Log and test log paths now use WORKSPACE_ROOT_PATH and RELATIVE_FOLDER_PATHS when ROOT_MODES is set to "workspace". All log/test log utilities are fully config-driven and workspace-aware.
-- **ConfigLoader Update**: Added get_log_file_path and get_test_log_file_path methods for modular path resolution.
-- **SHARED_CONFIG_FILES Support**: Loader now resolves shared config files from modular folders, supporting workspace/project root and dev/test environments.
-- **Factories Singleton Fix**: Cleaned up factories.py to ensure proper global statement placement and singleton pattern.
-- **Minimal ConfigLoader Test**: Added `test_config_minimal.py` for basic config loading and path resolution validation.
-- **Test Config Isolation**: Created `tests/config/GLOBAL_SHARED.d/COLOURS.json` for isolated test config loading.
-- **Test Environment**: Tests now use local config if present, otherwise fall back to workspace/project config.
+- **Root Mode Coverage**: Added focused tests validating `project` vs `workspace` config root mode resolution.
+- **Shared Config Coverage**: Added tests ensuring shared config lookup follows `ROOTS`, `ROOT_MODES`, `PATHS`, and `SHARED_CONFIG`.
+- **Test Bootstrap Reliability**: Existing tests now bootstrap local `src` imports so direct script runs from `tests/` work reliably.
+- **Config Test Alignment**: Updated shared config expectations to match current `config/GLOBAL_SHARED.d` contents.
 
 
 tUilKit (formerly utilsbase) is a modular Python toolkit providing utility functions, dictionaries, and configuration for development projects.  

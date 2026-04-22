@@ -1,6 +1,6 @@
 # FileSystem Usage Guide
 
-Use `FileSystem` for safe, colour-aware filesystem operations. It is a thin wrapper around `os`/`shutil` with logging hooks and log-category routing from `GLOBAL_CONFIG.json` (`LOG_CATEGORIES`).
+Use `FileSystem` for safe, colour-aware filesystem operations. It is a thin wrapper around `os`/`shutil` with logging hooks and log-category routing from `tUilKit_CONFIG.json` (`LOG_CATEGORIES`).
 
 ## Quick start
 ```python

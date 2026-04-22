@@ -34,7 +34,7 @@ config_loader = get_config_loader()
 ```python
 from tUilKit.utils.output import Logger, ColourManager
 from tUilKit.utils.fs import FileSystem
-from tUilKit.config.config import ConfigLoader
+from tUilKit.utils.config import ConfigLoader
 
 config_loader = ConfigLoader()
 colour_config = config_loader.load_colour_config()
@@ -45,6 +45,19 @@ file_system = FileSystem(logger, log_files=log_files)
 ```
 
 See also: [ColourKey Usage Guide](ColourKey_Usage_Guide.md) and [FileSystem Usage Guide](FileSystem_Usage_Guide.md) for focused references.
+
+---
+
+## Config Standard (Current)
+
+tUilKit path and config resolution is driven by these sections in `config/tUilKit_CONFIG.json`:
+
+- `ROOTS`: base roots such as `PROJECT` and `WORKSPACE`
+- `ROOT_MODES`: mode switches such as `CONFIG`, `LOGS`, and test roots
+- `PATHS`: relative folders under the selected roots
+- `SHARED_CONFIG`: shared config folder and file mappings (for example `GLOBAL_SHARED.d/COLOURS.json`)
+
+When `ROOT_MODES.CONFIG` is set to `workspace`, config lookups resolve from the workspace root first; when set to `project`, lookups resolve from the project root first.
 
 ---
 
