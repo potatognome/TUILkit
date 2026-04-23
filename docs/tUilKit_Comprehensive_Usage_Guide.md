@@ -22,11 +22,12 @@ tUilKit is a modular Python toolkit providing utility functions for logging, col
 ### Factory Initialization (Recommended)
 
 ```python
-from tUilKit import get_logger, get_file_system, get_config_loader
+from tUilKit import get_logger, get_file_system, get_config_loader, get_cli_menu_handler
 
-logger = get_logger()          # builds ConfigLoader + ColourManager under the hood
-file_system = get_file_system()  # shares logger + config
+logger = get_logger()              # builds ConfigLoader + ColourManager under the hood
+file_system = get_file_system()    # shares logger + config
 config_loader = get_config_loader()
+menus = get_cli_menu_handler()     # builds CLIMenuHandler with shared logger
 ```
 
 ### Direct Initialization (Advanced)
@@ -169,6 +170,46 @@ config = config_loader.load_config(config_path)
 
 # Ensure log folders exist
 config_loader.ensure_folders_exist(file_system)
+```
+
+### 5. CLIMenuInterface (CLIMenuHandler Class)
+
+**Purpose**: Interactive terminal menus, prompts, and directory navigation with colour-logged output.
+
+**Most Used Methods**:
+- `show_numbered_menu(title, options, allow_back=True, allow_quit=True)` - Display a numbered selection menu
+- `confirm(message, default=False)` - Yes/no confirmation prompt
+- `prompt_with_default(prompt, default=None, validator=None, allow_empty=False)` - Text input with optional default and validator
+- `get_numeric_choice(min_val, max_val, prompt=None, allow_cancel=True)` - Bounded integer input with retry
+- `show_info_screen(title, info, wait_for_input=False)` - Display a labelled key/value info panel
+- `edit_key_value_pairs(title, data, prompts, validators=None)` - Interactive dict editor
+- `browse_directory(start_path=None, title=None, allow_creation=False)` - Filesystem navigator; returns selected `Path` or `None`
+- `show_menu_with_preview(title, items, preview_func)` - Menu with a side preview pane
+
+**Example**:
+```python
+from tUilKit import get_cli_menu_handler
+
+menus = get_cli_menu_handler()
+
+# Numbered selection menu
+options = [
+    {"key": "open", "label": "Open file", "icon": "📂"},
+    {"key": "quit", "label": "Quit",      "icon": "🚪"},
+]
+choice = menus.show_numbered_menu("Main Menu", options)
+
+# Confirmation prompt
+if menus.confirm("Overwrite existing file?", default=False):
+    ...
+
+# Bounded integer input
+page = menus.get_numeric_choice(1, 10, prompt="Select page (1-10)")
+
+# Directory browser
+target = menus.browse_directory(start_path="./data", title="Select folder")
+if target is not None:
+    logger.colour_log("!path", str(target), "!done", "selected")
 ```
 
 ## DataFrameInterface (SmartDataFrameHandler Class)
@@ -383,7 +424,7 @@ logger = Logger(colour_manager, log_files=custom_logs)
 Run the comprehensive test suite:
 
 ```bash
-# Run all tests
+# Run all pytest unit tests
 python -m pytest tests/ -v
 
 # Run with log cleanup
@@ -399,6 +440,25 @@ python -m pytest tests/ --tb=short --disable-warnings
 - Check log outputs for correct colour and category routing.
 - Test with missing/invalid config files to verify error handling.
 ```
+
+### Supplementary Examples (`examples/`)
+
+The `examples/` folder contains manual test scripts that exercise all public functions with
+normal, edge-case, and adversarial inputs. They write colour-logged output to
+`.test_logs/tUilKit/` in the workspace root.
+
+```bash
+# Bootstrap — generate test_paths.json (run once after cloning or moving the workspace)
+python examples/test_config.py
+
+# Run examples (use UTF-8 encoding to support emoji output)
+$env:PYTHONIOENCODING="utf-8"; python examples/test_output.py
+$env:PYTHONIOENCODING="utf-8"; python examples/test_cli_menus.py
+```
+
+Each script produces a per-function log file at
+`.test_logs/tUilKit/test_log_<function_name>.log` alongside a session-level `SESSION.log`.
+See `building_examples_policy.md` in `.github/copilot-instructions.d/` for authoring guidelines.
 
 ## Integration Example
 

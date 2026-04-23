@@ -3,7 +3,14 @@ tUilKit
 # Project Name
 tUilKit
 
-**Current version: 0.5.0**
+**Current version: 0.5.1**
+
+## Recent Enhancements (v0.5.1)
+
+- **CLIMenuHandler factory fix**: `get_cli_menu_handler()` in `factories.py` now correctly imports `CLIMenuHandler` before instantiation.
+- **Examples suite**: Added `examples/test_config.py` (path bootstrap), `examples/test_output.py` (8 tests for `ColourManager` + `Logger`), and `examples/test_cli_menus.py` (8 tests for `CLIMenuHandler`) covering normal, edge-case, and adversarial inputs.
+- **Policy files**: Rewrote `building_examples_policy.md` with `tUilKit_CONFIG` path-resolution standard; added §6 (verbose function call log format) to `logging_policy.md`. Both propagated to all projects.
+- **Docs**: Added `CLIMenuHandler` interface section and `examples/` usage to `tUilKit_Comprehensive_Usage_Guide.md`.
 
 ## Recent Enhancements (v0.5.0)
 

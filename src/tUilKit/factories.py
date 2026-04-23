@@ -133,6 +133,7 @@ def get_cli_menu_handler():
     """
     global _cli_menu_handler
     if _cli_menu_handler is None:
+        from tUilKit.utils.cli_menus import CLIMenuHandler
         logger = get_logger()
         _cli_menu_handler = CLIMenuHandler(logger)
     return _cli_menu_handler

@@ -5,7 +5,7 @@ Purpose
   and which colour keys should be used for each category of event.
 - Applies to all projects in `Core/` and `Applications/`.
 - Agents must follow these rules when writing or reviewing any code that produces log output.
-
+ 
 ---
 
 ## 1. Mandatory Log Targets
@@ -241,11 +241,143 @@ Projects may omit sub-logs they do not need, but MASTER and SESSION are always r
 
 ---
 
+---
+
+## 6. Function Call Logging Format (Examples / Verbose Test Logging)
+
+In `examples/` scripts, every function under test must produce a structured call log entry
+that records the function called, its arguments, and the outcome.
+
+### 6.1 Standard Call Log Pattern
+
+For `OUTPUT = function(x, y, z)`:
+
+```python
+# Before calling — log what will be called
+logger.colour_log(
+    "!output",  "OUTPUT =",
+    "!proc",    "module.",
+    "!text",    "function_name",
+    "!args",    "with arguments:",
+    "<type>",   repr(x),
+    "<type>",   repr(y),
+    "<type>",   repr(z),
+    log_files=log_targets
+)
+output = function(x, y, z)
+
+# After — log outcome
+logger.colour_log(
+    "!done",   "ran successfully.",
+    "!output", "Producing output:",
+    "<type>",  repr(output),
+    "!info",   "assigned to OUTPUT",
+    log_files=log_targets
+)
+```
+
+On assertion failure:
+
+```python
+logger.colour_log(
+    "!fail",     "failed an assertion.",
+    "!expected", "Was expecting:", "<type>", repr(expected),
+    "!actual",   "However got:",   "<type>", repr(actual),
+    log_files=log_targets
+)
+```
+
+On exception:
+
+```python
+logger.colour_log(
+    "!error", "raised an exception.",
+    log_files=log_targets
+)
+logger.log_exception("function raised", e, log_files=log_targets)
+```
+
+### 6.2 Argument Type Key Selection
+
+Choose the type key that best represents the value:
+
+| Value type              | Key       |
+|-------------------------|-----------|
+| Calculated result       | `!calc`   |
+| Dict / structured data  | `!data`   |
+| Integer                 | `!int`    |
+| Float                   | `!float`  |
+| String / label          | `!text`   |
+| List / sequence         | `!list`   |
+| File path               | `!path`   |
+
+### 6.3 Per-Function Log Files
+
+Every test function in an `examples/` script must write to a dedicated log file:
+
+```
+TEST_LOGS/test_log_<function_name>.log
+```
+
+Build the path as:
+
+```python
+function_log = str(TEST_LOGS_FOLDER / f"test_log_{func.__name__}.log")
+log_targets  = [TEST_LOG_FILE, function_log]
+```
+
+All call-log entries must write to both `TEST_LOG_FILE` (session) and `function_log`.
+
+### 6.4 Log All Expected Parameters
+
+Log **all expected parameters** before calling the function, even when some have default values.
+This ensures the log is self-contained and no parameter values are ambiguous.
+
+### 6.5 Complete Example
+
+```python
+def test_colour_fstr(function_log=None):
+    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+
+    logger.colour_log(
+        "!output",  "result =",
+        "!proc",    "ColourManager.",
+        "!text",    "colour_fstr",
+        "!args",    "with arguments:",
+        "!data",    "*args=['!info', 'hello world']",
+        "!data",    "bg=None",
+        "!data",    "separator=' '",
+        log_files=log_targets
+    )
+    result = colour_manager.colour_fstr("!info", "hello world")
+    logger.colour_log(
+        "!done",   "ran successfully.",
+        "!output", "Producing output:",
+        "!text",   repr(result)[:60],
+        "!info",   "assigned to result",
+        log_files=log_targets
+    )
+
+    logger.colour_log("!test", "Assert: ANSI escape present in output", log_files=log_targets)
+    expected = "\033["
+    if expected not in result:
+        logger.colour_log(
+            "!fail",     "failed an assertion.",
+            "!expected", "Was expecting:", "!text", repr(expected),
+            "!actual",   "However got:",   "!text", repr(result)[:40],
+            log_files=log_targets
+        )
+    assert expected in result, "colour_fstr should produce ANSI escape code"
+    logger.colour_log("!pass", "Assertion passed.", log_files=log_targets)
+```
+
+---
+
 ## References
 
 - Colour key definitions: `.github/copilot-instructions.d/colour_key_usage.md`
 - tUilKit app guidelines: `.github/copilot-instructions.d/tuilkit_enabled_apps_guidelines.md`
-- Test logging: `.github/copilot-instructions.d/building_tests_policy.md`
+- Examples test logging: `.github/copilot-instructions.d/building_examples_policy.md`
 - Root modes / log paths: `.github/copilot-instructions.d/root_modes_workspace_project_paths.md`
 
 ---
