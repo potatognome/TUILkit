@@ -76,9 +76,7 @@
         "WARNING": "tUilKit_WARNING.log",
         "INIT": "tUilKit_INIT.log",
         "FS": "tUilKit_FS.log",
-        "DATABASE": "tUilKit_DATABASE.log",
-        "TRY": "tUilKit_TRY.log",
-        "CONFIG_READ": "tUilKit_CONFIG_READ.log"
+        "DATABASE": "tUilKit_DATABASE.log"
     },
     "LOG_CATEGORIES": {
         "default": [
