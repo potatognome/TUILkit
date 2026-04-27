@@ -14,7 +14,7 @@ project-level folders for config, logs, and output data.
 Agents must respect `ROOT_MODES` in app config and never hardcode output roots.
 
 Supported mode values:
-
+ 
 - `project`
 - `workspace`
 
