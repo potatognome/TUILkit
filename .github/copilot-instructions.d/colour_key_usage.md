@@ -7,7 +7,7 @@ Purpose
 
 ## Core Concept
 
-tUilKit uses **semantic colour codes** (e.g., `!info`, `!error`) instead of literal colours (e.g., `RED`, `BLUE`). This provides:
+tUilKit uses **semantic colour codes** (e.g., `!data`, `!error`) instead of literal colours (e.g., `RED`, `BLUE`). This provides:
 - **Consistency**: Same meaning = same colour across all apps
 - **Readability**: Codes describe intent, not appearance
 - **Flexibility**: Can change colour schemes without changing code
@@ -17,27 +17,26 @@ tUilKit uses **semantic colour codes** (e.g., `!info`, `!error`) instead of lite
 
 ### Informational
 
-**`!info`** - General information, neutral text
-- **Colour**: White
-- **Use**: Default text, descriptions, labels
-```python
-logger.colour_log("!info", "This is general information")
-logger.colour_log("!info", "Device name:", "!data", device_name)
-```
+**`!reset`** - Neutral/default text
+- **Use**: Neutral separators, blank lines, punctuation glue between semantic segments
+
+**`!info`** - Deprecated alias of `!reset`
+- **Status**: Deprecated
+- **Use**: Avoid in new code
 
 **`!data`** - Data values, variables, content
 - **Colour**: Cyan
 - **Use**: Displaying variable values, user data, configuration values
 ```python
-logger.colour_log("!info", "Version:", "!data", version)
-logger.colour_log("!info", "Count:", "!data", str(count))
+logger.colour_log("!text", "Version:", "!data", version)
+logger.colour_log("!text", "Count:", "!int", str(count))
 ```
 
 **`!int`** - Integer/numeric values
 - **Colour**: Light Blue
 - **Use**: Numbers, counts, indices
 ```python
-logger.colour_log("!info", "Processing item", "!int", str(i), "!info", "of", "!int", str(total))
+logger.colour_log("!proc", "Processing item", "!int", str(i), "!reset", "of", "!int", str(total))
 ```
 
 ### Status & Outcomes
@@ -47,7 +46,7 @@ logger.colour_log("!info", "Processing item", "!int", str(i), "!info", "of", "!i
 - **Use**: Successful operations, enabled status, completion messages
 ```python
 logger.colour_log("!done", "✅ Operation completed successfully")
-logger.colour_log("!info", "Status:", "!done", "Active")
+logger.colour_log("!text", "Status:", "!done", "Active")
 ```
 
 **`!error`** - Errors, failures, critical issues
@@ -88,10 +87,14 @@ logger.colour_log("!test", "Validating configuration...")
 
 **`!path`** - File paths, directory paths
 - **Colour**: Light Cyan
-- **Use**: Full file/directory paths, absolute paths
+- **Use**: Path labels and prefix text. **Always wrap the path value itself with `colourize_path`** (see below) — never pass a raw path string directly to a `!path` slot.
 ```python
-logger.colour_log("!info", "Source:", "!path", str(source_path))
-logger.colour_log("!error", "Path not found:", "!path", missing_path)
+from tUilKit.utils.fs import colourize_path
+
+# Build colourized path first, then embed in the label string
+coloured = colourize_path(str(source_path), logger.Colour_Mgr)
+logger.colour_log("!path", f"  Source : {coloured}")
+logger.colour_log("!error", "Path not found:", "!path", colourize_path(missing_path, logger.Colour_Mgr))
 ```
 
 **`!thisfolder`** - Current folder/project name
@@ -179,7 +182,7 @@ Full details and lifecycle rules are in `.github/copilot-instructions.d/logging_
 | Log Category                  | Primary key | Value / detail key     |
 |-------------------------------|-------------|------------------------|
 | ConfigLoader init / load      | `!proc`     | `!file`                |
-| Config key reads              | `!info`     | `!data`                |
+| Config key reads              | `!text`     | `!data`                |
 | File system operation (start) | `!proc`     | `!path` / `!file`      |
 | File system success           | `!done`     | `!file`                |
 | File system failure           | `!error`    | `!path`                |
@@ -196,25 +199,47 @@ Full details and lifecycle rules are in `.github/copilot-instructions.d/logging_
 
 ### Composite Path Colouring
 
-Full file paths contain multiple components, each with its own colour key.  Break paths
-into parts for richer terminal and log output:
+**Always use `colourize_path` for any file or directory path displayed to the user.** Raw `str(path)` must not appear in `colour_log` calls.
+
+`colourize_path` normalizes the path and applies semantic colour highlighting via the colour manager:
 
 ```python
-# /home/user/projects/myapp/logFiles/SESSION.log
+from tUilKit.utils.fs import colourize_path
+
+# Basic usage
+coloured = colourize_path(str(some_path), logger.Colour_Mgr)
+logger.colour_log("!path", f"  Config : {coloured}", log_files=lf, time_stamp=True)
+
+# Inline in f-string inside a !path label
 logger.colour_log(
-    "!info",       "Log path:",
-    "!path",       "/home/user/projects/myapp/",
-    "!thisfolder", "logFiles/",
-    "!file",       "SESSION.log",
-    log_files=list(LOG_FILES.values())
+    "!path", f"  Source : {colourize_path(str(source), logger.Colour_Mgr)}",
+    log_files=lf, time_stamp=True,
 )
 ```
 
-Or delegate to `logger.colour_path()` for automatic last-segment highlighting:
+In **V4l1d8r menus** (where `AppContext` is available), use the `_cpath(ctx, path)` helper from `menus/shared.py`.
+It combines path relativization (`_rel`) with `colourize_path` in one call:
 
 ```python
+from .shared import _cpath
+
+# Displays path relative to workspace root, with colour
+ctx.logger.colour_log(
+    "!path", f"  Config : {_cpath(ctx, project.primary_config_path)}\n",
+    log_files=lf, time_stamp=True,
+)
+ctx.logger.colour_log(
+    "!done", f"  Written: {_cpath(ctx, output_file)}",
+    log_files=lf, time_stamp=True,
+)
+```
+
+For lower-level multi-segment path colouring, `logger.colour_path()` can highlight the last segment:
+
+```python
+# /home/user/projects/myapp/logFiles/SESSION.log
 coloured = logger.colour_path(path, highlight_last_folder=True, colour_key="!path")
-logger.colour_log("!info", "Path:", coloured, log_files=list(LOG_FILES.values()))
+logger.colour_log("!path", f"Path: {coloured}", log_files=list(LOG_FILES.values()))
 ```
 
 
@@ -222,8 +247,8 @@ logger.colour_log("!info", "Path:", coloured, log_files=list(LOG_FILES.values())
 ### Basic Information Display
 
 ```python
-logger.colour_log("!info", "Processing project:", "!thisfolder", project_name)
-logger.colour_log("!info", "Version:", "!data", version, "!info", "| Status:", "!done", "Active")
+logger.colour_log("!proc", "Processing project:", "!thisfolder", project_name)
+logger.colour_log("!text", "Version:", "!data", version, "!reset", "|", "!text", "Status:", "!done", "Active")
 ```
 
 ### Error Reporting
@@ -237,23 +262,23 @@ logger.log_exception("Configuration load error", exception, log_files=list(LOG_F
 
 ```python
 logger.colour_log("!proc", "🔄 Syncing files...")
-logger.colour_log("!info", "Progress:", "!int", str(current), "!info", "/", "!int", str(total))
+logger.colour_log("!proc", "Progress:", "!int", str(current), "!reset", "/", "!int", str(total))
 logger.colour_log("!done", "✅ Sync complete!")
 ```
 
 ### Menu Display
 
 ```python
-logger.colour_log("!info", "📋 Main Menu:")
-logger.colour_log("!list", "1", "!info", ". 📂 Edit Configuration")
-logger.colour_log("!list", "2", "!info", ". 💾 Run Backup")
-logger.colour_log("!list", "3", "!info", ". 🚪 Exit")
+logger.colour_log("!text", "📋 Main Menu:")
+logger.colour_log("!list", "1", "!text", ". 📂 Edit Configuration")
+logger.colour_log("!list", "2", "!text", ". 💾 Run Backup")
+logger.colour_log("!list", "3", "!text", ". 🚪 Exit")
 ```
 
 ### Test Output
 
 ```python
-logger.colour_log("!test", "Running test", "!int", "1", "!info", ":", "!proc", "test_function")
+logger.colour_log("!test", "Running test", "!int", "1", "!reset", ":", "!proc", "test_function")
 logger.colour_log("!test", "Expected:", "!expect", "expected_value")
 logger.colour_log("!test", "Actual:", "!data", "actual_value")
 logger.colour_log("!test", "Result:", "!pass", "PASSED")
@@ -262,10 +287,12 @@ logger.colour_log("!test", "Result:", "!pass", "PASSED")
 ### File Operations
 
 ```python
-logger.colour_log("!info", "Source:", "!path", str(source))
-logger.colour_log("!info", "Destination:", "!path", str(dest))
-logger.colour_log("!info", "Copying file:", "!file", filename)
-logger.colour_log("!done", "✅ File copied successfully")
+from tUilKit.utils.fs import colourize_path
+
+logger.colour_log("!path", f"  Source     : {colourize_path(str(source), logger.Colour_Mgr)}", log_files=lf)
+logger.colour_log("!path", f"  Destination: {colourize_path(str(dest), logger.Colour_Mgr)}", log_files=lf)
+logger.colour_log("!info", "Copying file:", "!file", filename, log_files=lf)
+logger.colour_log("!done", "✅ File copied successfully", log_files=lf)
 ```
 
 ## Multi-Line Colour Logging
@@ -311,7 +338,18 @@ logger.apply_border(
 
 ### Colour Path
 
-Highlight paths with colour:
+**`colourize_path`** from `tUilKit.utils.fs` is the standard function for displaying any path.
+It normalizes the path string and applies colour via the colour manager:
+
+```python
+from tUilKit.utils.fs import colourize_path
+
+# Signature: colourize_path(path: str, colour_manager, style: str = "auto") -> str
+coloured = colourize_path(str(my_path), logger.Colour_Mgr)
+logger.colour_log("!path", f"  Output: {coloured}", log_files=list(LOG_FILES.values()))
+```
+
+For lower-level control, `logger.colour_path()` exposes the same logic with additional segment options:
 
 ```python
 coloured_path = logger.colour_path(
@@ -350,7 +388,9 @@ logger.colour_log("!info", "Message", log_files=[LOG_FILES["SESSION"], function_
 - ✅ Be consistent: same meaning = same colour code
 - ✅ Combine codes for rich, meaningful output
 - ✅ Log to files for persistent records
-- ✅ Use `!path` for full paths, `!thisfolder` for folder names
+- ✅ Use `!path` for full path labels, `!thisfolder` for folder names, `!file` for bare filenames
+- ✅ **Always wrap path values with `colourize_path(str(path), logger.Colour_Mgr)`** before passing to `colour_log`
+- ✅ In V4l1d8r menus, use `_cpath(ctx, path)` which combines relativization + `colourize_path`
 - ✅ Use `!done` for success, `!error` for failures, `!warn` for warnings
 
 ### DON'T:
@@ -359,6 +399,7 @@ logger.colour_log("!info", "Message", log_files=[LOG_FILES["SESSION"], function_
 - ❌ Don't mix plain text with coloured output inconsistently
 - ❌ Don't forget to specify log_files for important messages
 - ❌ Don't use `!error` for warnings or `!warn` for errors
+- ❌ **Don't pass raw `str(path)` or `f"{path}"` directly as a `!path` value** — always use `colourize_path`
 
 ## Common Patterns
 
@@ -460,4 +501,4 @@ logger.colour_log("!test", "Result:", "!pass", "PASSED")
 - Test output: `.github/copilot-instructions.d/building_tests_policy.md`
 
 ---
-Last updated: 2026-04-18
+Last updated: 2026-05-01

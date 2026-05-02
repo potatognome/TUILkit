@@ -15,28 +15,59 @@ import copy
 SET_FG_COLOUR = ESCAPES['OCTAL'] + COMMANDS['FGC']
 SET_BG_COLOUR = ESCAPES['OCTAL'] + COMMANDS['BGC']
 ANSI_RESET = ESCAPES['OCTAL'] + COMMANDS['RESET']
+
+
+def _resolve_log_files_from_config(loader: ConfigLoader) -> dict:
+    cfg = loader.global_config if isinstance(loader.global_config, dict) else {}
+    roots_cfg = cfg.get("ROOTS", {}) if isinstance(cfg.get("ROOTS", {}), dict) else {}
+    paths_cfg = cfg.get("PATHS", {}) if isinstance(cfg.get("PATHS", {}), dict) else {}
+    root_modes = cfg.get("ROOT_MODES", {}) if isinstance(cfg.get("ROOT_MODES", {}), dict) else {}
+    log_files = copy.deepcopy(cfg.get("LOG_FILES", {})) if isinstance(cfg.get("LOG_FILES", {}), dict) else {}
+
+    mode = str(root_modes.get("LOG_PATHS", root_modes.get("LOGS", "project"))).strip().lower()
+    logs_rel = paths_cfg.get("LOG_PATHS") or paths_cfg.get("LOGS") or ".logs/tUilKit/"
+
+    if os.path.isabs(str(logs_rel)):
+        logs_root = str(logs_rel)
+    else:
+        if mode == "workspace":
+            root_base = roots_cfg.get("WORKSPACE", os.getcwd())
+        else:
+            root_base = roots_cfg.get("PROJECT", os.getcwd())
+        logs_root = os.path.join(str(root_base), str(logs_rel))
+
+    logs_root = os.path.abspath(logs_root)
+
+    resolved = {}
+    for key, value in log_files.items():
+        if not isinstance(value, str) or not value.strip():
+            continue
+        if os.path.isabs(value):
+            resolved[key] = value
+        else:
+            resolved[key] = os.path.abspath(os.path.join(logs_root, value))
+    return resolved
+
+
+def _resolve_tuilkit_session_log(loader: ConfigLoader) -> str:
+    cfg = loader.global_config if isinstance(loader.global_config, dict) else {}
+    roots_cfg = cfg.get("ROOTS", {}) if isinstance(cfg.get("ROOTS", {}), dict) else {}
+    log_files = cfg.get("LOG_FILES", {}) if isinstance(cfg.get("LOG_FILES", {}), dict) else {}
+
+    workspace_root = os.path.abspath(str(roots_cfg.get("WORKSPACE", os.getcwd())))
+    session_name = str(log_files.get("SESSION", "tUilKit_SESSION.log"))
+    session_basename = os.path.basename(session_name)
+    return os.path.join(workspace_root, ".logs", "tUilKit", session_basename)
+
+
 try:
     config_loader = ConfigLoader()
-    LOG_FILES = copy.deepcopy(config_loader.global_config.get("LOG_FILES", {}))
-    root_modes = config_loader.global_config.get("ROOT_MODES", {})
-    log_root_mode = root_modes.get("LOGS", "project")
-    if log_root_mode == "workspace":
-        workspace_root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
-        for key in LOG_FILES:
-            if not os.path.isabs(LOG_FILES[key]):
-                app_name = LOG_FILES[key].split("/")[1] if "/" in LOG_FILES[key] else "tUilKit"
-                log_name = os.path.basename(LOG_FILES[key])
-                LOG_FILES[key] = os.path.join(workspace_root, LOG_FILES[key])
-    elif log_root_mode == "auto":
-        pass
+    LOG_FILES = _resolve_log_files_from_config(config_loader)
+    TUILKIT_SESSION_LOG = _resolve_tuilkit_session_log(config_loader)
 except Exception:
     config_loader = None
     LOG_FILES = {}
-    # For 'auto', default to workspace root
-    workspace_root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
-    for key in LOG_FILES:
-        if not os.path.isabs(LOG_FILES[key]):
-            LOG_FILES[key] = os.path.join(workspace_root, LOG_FILES[key])
+    TUILKIT_SESSION_LOG = None
 
 class ColourManager(ColourInterface):
     def __init__(self, colour_config: dict):
@@ -263,11 +294,10 @@ class Logger(LoggerInterface):
         effective_log_files = list(log_files)
         if (dual_log if dual_log is not None else self.dual_logging):
             session_log = self.log_files.get("SESSION")
-            tuilkit_session = os.path.join(".logs", "tUilKit", "SESSION.log")
             if session_log and session_log not in effective_log_files:
                 effective_log_files.append(session_log)
-            if tuilkit_session not in effective_log_files:
-                effective_log_files.append(tuilkit_session)
+            if TUILKIT_SESSION_LOG and TUILKIT_SESSION_LOG not in effective_log_files:
+                effective_log_files.append(TUILKIT_SESSION_LOG)
 
         if log_to in ("file", "both") and effective_log_files:
             for log_file in effective_log_files:

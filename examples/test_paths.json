@@ -1,8 +1,14 @@
 {
-    "examples_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\examples",
-    "project_root": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit",
-    "workspace_root": "C:\\Repository\\Daniel\\dev_local",
-    "test_logs_folder": "C:\\Repository\\Daniel\\dev_local\\.tests_logs\\Syncbot",
-    "test_config_folder": "C:\\Repository\\Daniel\\dev_local\\.tests_config",
-    "config_folder": "C:\\Repository\\Daniel\\dev_local\\config"
+  "project_name": "tUilKit",
+  "config_file": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\config\\tUilKit_CONFIG.json",
+  "tuilkit_config_file": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\config\\tUilKit_CONFIG.json",
+  "examples_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\examples",
+  "project_root": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit",
+  "workspace_root": "C:\\Repository\\Daniel\\dev_local",
+  "test_logs_folder": "C:\\Repository\\Daniel\\dev_local\\.tests_logs\\tUilKit",
+  "tests_config_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\.tests_config",
+  "config_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\config",
+  "logs_folder": "C:\\Repository\\Daniel\\dev_local\\.logs\\tUilKit",
+  "tests_inputs_folder": "C:\\Repository\\Daniel\\dev_local\\.tests_data",
+  "tests_outputs_folder": "C:\\Repository\\Daniel\\dev_local\\.tests_data\\output"
 }

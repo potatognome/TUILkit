@@ -10,14 +10,15 @@ Purpose
 
 ## 1. Mandatory Log Targets
 
-Every tUilKit project must define a `LOG_FILES` dictionary in its primary config JSON under an
-`INIT` section (or equivalent top-level key).  At minimum, three log file paths are required:
+Every tUilKit project must define `LOG_FILES` in primary config JSON and route entries using `LOG_CATEGORIES` (or equivalent). At minimum, three log file targets are required:
+
 
 | Key        | Filename convention     | Purpose                                      |
 |------------|-------------------------|----------------------------------------------|
 | `MASTER`   | contains `MASTER`       | Archival, append-only, never deleted         |
 | `SESSION`  | contains `SESSION`      | Overwritten at main entry-point startup      |
-| `RUNTIME`  | contains `RUNTIME`      | Same as SESSION but may also be overwritten at regular intervals or natural execution stages |
+| `RUNTIME`  | contains `RUNTIME`      | Same as SESSION but may also be overwritten  |
+|            |                         | at natural intervals or execution stages     |
 
 Additional log files (e.g. `TRY`, `FS`, `INIT`) are strongly recommended and described below.
 
@@ -75,14 +76,14 @@ logger.colour_log(
 
 ### 2.2 Individual Config Reads (`!data` → CONFIG_READ log)
 
-Individual `config.get()` calls should be logged using `!info` / `!data` pairs.  If a module
+Individual `config.get()` calls should be logged using `!text` / `!data` pairs (or another explicit semantic combination). If a module
 makes many sequential reads they may be summarised into a single log entry.  Route to the
 `CONFIG_READ` log when defined, in addition to SESSION and MASTER.
 
 ```python
 value = config.get("SOME_KEY", "default")
 logger.colour_log(
-    "!info", "Config read:", "!data", "SOME_KEY", "!info", "→", "!data", str(value),
+    "!text", "Config read:", "!data", "SOME_KEY", "!reset", "→", "!data", str(value),
     log_files=[LOG_FILES["SESSION"], LOG_FILES["MASTER"], LOG_FILES.get("CONFIG_READ", "")]
 )
 ```
@@ -156,9 +157,9 @@ supports it, so callers do not need to inject them manually.
 Projects may define an `INFO_DISPLAY` key in their primary config JSON with one of:
 `VERBOSE`, `BASIC`, or `MINIMAL`.
 
-| Mode      | Terminal output           | File output (SESSION/MASTER) |
-|-----------|---------------------------|------------------------------|
-| `VERBOSE` | All categories logged     | All entries to at least SESSION, MASTER, and any relevant sub-log (INIT, FS, CONFIG_READ, ERROR, TRY) |
+| Mode         | Terminal output           | File output (SESSION/MASTER) |
+|--------------|---------------------------|------------------------------|
+| `VERBOSE`    | All categories logged     | All entries to at least SESSION, MASTER, and any relevant sub-log (INIT, FS, CONFIG_READ, ERROR, TRY) |
 | `BASIC`   | Key events only (INIT, errors, done) | SESSION + MASTER only |
 | `MINIMAL` | Errors and completion only | SESSION + MASTER only |
 
@@ -174,7 +175,7 @@ Projects may define an `INFO_DISPLAY` key in their primary config JSON with one 
 | Category                   | Primary key | Secondary / value key | Notes |
 |----------------------------|-------------|------------------------|-------|
 | ConfigLoader init/load     | `!proc`     | `!file`                | Target INIT log |
-| Config key reads           | `!info`     | `!data`                | Target CONFIG_READ log |
+| Config key reads           | `!text`     | `!data`                | Target CONFIG_READ log |
 | File system operations     | `!proc`     | `!path` / `!file`      | Target FS log |
 | FS success                 | `!done`     | `!file`                | |
 | FS failure                 | `!error`    | `!path`                | Target ERROR log |
@@ -192,27 +193,27 @@ Projects may define an `INFO_DISPLAY` key in their primary config JSON with one 
 For a full list of colour keys and usage examples see
 `.github/copilot-instructions.d/colour_key_usage.md`.
 
+`!info` is deprecated and should not be introduced in new logging code. Use `!reset` for neutral glue text and semantic keys for content.
+
 ### 5.1 Composite Path Colouring
 
-Full file paths contain multiple components, each with its own key.  When displaying a path
-in context, break it into parts:
+Always wrap filesystem paths with `colourize_path` before logging. In V4l1d8r menus, prefer `_cpath(ctx, path)`.
 
 ```python
-# e.g. /home/user/projects/myapp/logFiles/SESSION.log
+from tUilKit.utils.fs import colourize_path
+
+coloured = colourize_path(str(output_path), logger.Colour_Mgr)
 logger.colour_log(
-    "!info",       "Log path:",
-    "!path",       "/home/user/projects/myapp/",
-    "!thisfolder", "logFiles/",
-    "!file",       "SESSION.log",
+    "!path",       f"Log path: {coloured}",
     log_files=list(LOG_FILES.values())
 )
 ```
 
-Or use `logger.colour_path()` to auto-highlight the final folder/file component:
+Or use `logger.colour_path()` for lower-level segment formatting:
 
 ```python
 coloured = logger.colour_path(path, highlight_last_folder=True, colour_key="!path")
-logger.colour_log("!info", "Path:", coloured, log_files=list(LOG_FILES.values()))
+logger.colour_log("!path", f"Path: {coloured}", log_files=list(LOG_FILES.values()))
 ```
 
 ---
@@ -271,7 +272,7 @@ logger.colour_log(
     "!done",   "ran successfully.",
     "!output", "Producing output:",
     "<type>",  repr(output),
-    "!info",   "assigned to OUTPUT",
+    "!reset",  "assigned to OUTPUT",
     log_files=log_targets
 )
 ```
@@ -316,7 +317,7 @@ Choose the type key that best represents the value:
 Every test function in an `examples/` script must write to a dedicated log file:
 
 ```
-TEST_LOGS/test_log_<function_name>.log
+TESTS_LOGS/test_log_<function_name>.log
 ```
 
 Build the path as:
@@ -337,6 +338,9 @@ This ensures the log is self-contained and no parameter values are ambiguous.
 
 ```python
 def test_colour_fstr(function_log=None):
+
+---
+Last updated: 2026-05-01
     log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
 
     logger.colour_log(

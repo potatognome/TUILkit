@@ -133,5 +133,8 @@
             "WARNING",
             "DATABASE"
         ]
+    },
+    "SECONDARY": {
+        "FILE": "tUilKit_SECONDARY.json"
     }
 }
