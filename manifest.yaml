@@ -1,0 +1,21 @@
+name: tUilKit
+layer: interface
+description: UI toolkit, compositor, logging, colour integration, and windowed apps.
+capabilities:
+  - render_windows
+  - draw_components
+  - manage_colours
+  - log_output
+depends_on:
+  - Chromaspace
+  - Chromaschemes
+  - Validator
+  - LogStation
+provides:
+  - UISpec
+protocols:
+  - ui.schema
+  - colour.schema
+  - log.schema
+working_hours: "24/7"
+schema_version: "1.0"

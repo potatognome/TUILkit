@@ -1,0 +1,6 @@
+{
+    "FS_OPERATIONS": {
+        "CREATE_MISSING_FOLDERS": true,
+        "CREATE_MISSING_FILES": true
+    }
+}
