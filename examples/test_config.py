@@ -24,10 +24,9 @@ def _resolve(mode_key: str, path_key: str) -> Path:
     base = WORKSPACE_ROOT if mode == "workspace" else PROJECT_ROOT
     return base / config.get("PATHS", {}).get(path_key, "")
 
-
-TEST_LOGS_FOLDER   = _resolve("TEST_LOGS",   "TEST_LOGS")
-TEST_CONFIG_FOLDER = _resolve("TEST_CONFIG", "TEST_CONFIG")
-CONFIG_FOLDER      = _resolve("CONFIG",      "CONFIG")
+TEST_LOGS_FOLDER   = _resolve("TESTS_LOGS",   "TESTS_LOGS")
+TEST_CONFIG_FOLDER = _resolve("TESTS_CONFIG", "TESTS_CONFIG")
+CONFIG_FOLDER      = _resolve("CONFIG",       "CONFIG")
 
 paths = {
     "examples_folder":    str(HERE.parent),

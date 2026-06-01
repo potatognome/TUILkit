@@ -58,6 +58,16 @@ Examples:
 - `.logs/Chromaspace/`
 - `.projects_data/Chromaschemes/`
 
+### Workspace Shared Config Convention
+
+- Use a single shared config bundle at:
+  - `.workspace/.projects_config/GLOBAL_SHARED.d/`
+- In app configs, expose this path via:
+  - `PATHS["GLOBAL_SHARED.d"] = ".workspace/.projects_config/GLOBAL_SHARED.d/"`
+- Keep app-local optional overrides under:
+  - `PATHS["ALT_CONFIG.d"]`
+- Do not rely on per-app `SHARED_CONFIG` blocks in active primary configs.
+
 ## Required Agent Behavior
 
 - Read app config first; do not assume folder mode.
@@ -108,4 +118,4 @@ Recommended order for writing logs/data:
 - Do not ignore alternate workspace folders when they are enabled.
 
 ---
-Last updated: 2026-05-01
+Last updated: 2026-05-27

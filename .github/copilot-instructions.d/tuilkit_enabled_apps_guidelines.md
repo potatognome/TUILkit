@@ -1,9 +1,9 @@
 # Building tUilKit-Enabled Apps (Guidelines & Policies)
 
 Purpose
-- Standardized guidelines for creating applications that use tUilKit as their core utility framework.
-- Ensures consistency, maintainability, and proper use of tUilKit interfaces across all projects.
-- Applies to all projects in `Applications/` and retrofit staging projects in `SuiteTools/PORTS/`.
+- Standardized guidelines for creating and maintaining applications that use tUilKit as their core utility framework.
+- Aligns app behavior with current Prismata workspace policy for config, paths, shared assets, and logging.
+- Applies to active projects under `Core/` and `Applications/`.
 
 ## Core Principles
 
@@ -18,6 +18,19 @@ Purpose
 - Business logic: Separate from I/O and presentation layers.
 - CLI menus: Modular functions that can be tested independently.
 
+**Config-Driven Path Resolution**
+- Resolve paths using `ROOTS`, `ROOT_MODES`, and `PATHS` from the app primary config.
+- Do not hardcode absolute machine-specific paths in runtime code.
+- Use tUilKit loaders and utilities instead of ad hoc path construction whenever available.
+
+**Single Workspace Shared Config Source**
+- The Prismata ecosystem uses one shared config directory:
+  - `.workspace/.projects_config/GLOBAL_SHARED.d/`
+- Every tUilKit-enabled app must expose this through:
+  - `PATHS["GLOBAL_SHARED.d"] = ".workspace/.projects_config/GLOBAL_SHARED.d/"`
+- Do not rely on per-project `SHARED_CONFIG` entries in primary config files.
+- Per-project optional overrides remain in each app's `ALT_CONFIG.d`.
+
 **Deterministic Outputs**
 - All logging should use colour codes (`!info`, `!error`, etc.) for consistency.
 - Test outputs should be reproducible and comparable.
@@ -29,6 +42,7 @@ Purpose
 ProjectName/
 ├── config/
 │   ├── PROJECT_CONFIG.json      # Main configuration
+│   ├── ALT_CONFIG.d/            # Optional app-local overrides
 │   └── devices.d/               # Optional: device-specific configs
 ├── docs/
 │   ├── README.md                # User-facing overview and usage
@@ -49,6 +63,19 @@ ProjectName/
 │   └── test_*.py                # Test modules
 ├── pyproject.toml               # Package metadata and dependencies
 └── requirements.txt             # Optional, if project uses pip workflow
+```
+
+Workspace-level shared config location (outside app folders):
+
+```
+Prismata/
+└── .workspace/
+  └── .projects_config/
+    └── GLOBAL_SHARED.d/
+      ├── COLOURS.json
+      ├── BORDER_PATTERNS.json
+      ├── OUTPUT_PREFS.json
+      └── ...
 ```
 
 ## Initialization Pattern
@@ -86,13 +113,28 @@ except Exception as e:
     MODULE_SETTING = "default_value"
 ```
 
+  Recommended shared bundle access pattern:
+
+  ```python
+  from pathlib import Path
+
+  workspace_root = Path(config.get("ROOTS", {}).get("WORKSPACE", Path.cwd()))
+  global_shared_rel = config.get("PATHS", {}).get("GLOBAL_SHARED.d", "")
+
+  global_shared_dir = (workspace_root / global_shared_rel).resolve() if global_shared_rel else None
+  if global_shared_dir:
+    colours_path = global_shared_dir / "COLOURS.json"
+  ```
+
 ## Configuration Best Practices
 
 **Config File Structure**
 - Use descriptive top-level keys (UPPERCASE for sections).
-- Include inline comments for clarity.
 - Provide sensible defaults.
 - Version your config schema if it may change.
+- Keep `ROOTS`, `ROOT_MODES`, and `PATHS` explicit and complete.
+- Keep `GLOBAL_SHARED.d` in `PATHS`; keep per-project optional overrides in `ALT_CONFIG.d`.
+- Do not add `SHARED_CONFIG` blocks to active primary configs.
 
 Example:
 ```json
@@ -111,6 +153,18 @@ Example:
     "FS":          "logFiles/FS.log",
     "CONFIG_READ": "logFiles/CONFIG_READ.log",
     "ERROR":       "logFiles/ERROR.log"
+  },
+  "ROOTS": {
+    "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata"
+  },
+  "ROOT_MODES": {
+    "CONFIG": "project",
+    "LOGS": "project",
+    "OUTPUTS": "project"
+  },
+  "PATHS": {
+    "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/",
+    "ALT_CONFIG.d": "config/ALT_CONFIG.d/"
   },
   "INFO_DISPLAY": "VERBOSE",
   "OPTIONS": {
@@ -166,6 +220,7 @@ file_system.validate_and_create_folder("output/results")
 - See `.github/copilot-instructions.d/cli_menu_patterns.md` for detailed menu patterns.
 - For V4l1d8r-style apps, use shared menu helpers (`_display_header`, `_print_options`) and the standard icon set (`📂 ✅ 🏗️ 💾 🚪 ◀`).
 - Keep snippet tools and global toggles under a Settings menu; reserve Main menu for top-level navigation.
+- On startup, log resolved root-mode and effective shared-config path values.
 
 **Argument Parsing**
 ```python
@@ -233,6 +288,7 @@ LOG_FILES = config_loader.global_config.get("LOG_FILES", {
 - See `.github/copilot-instructions.d/tuilkit_imports.md` for detailed import guidelines.
 - Use factory functions from `tUilKit` package.
 - Import specific utilities only when needed.
+- Prefer interface/factory entry points for config resolution so root-mode and workspace policies stay centralized.
 
 **Package vs Local Imports**
 ```python
@@ -248,13 +304,13 @@ from tUilKit.utils.output import Logger
 
 ## Testing Integration
 
-- Follow `.github/copilot-instructions.d/building_tests_policy.md` for test structure.
+- Follow `.github/copilot-instructions.d/building_examples_policy.md` for supplementary example test structure.
 - Use tUilKit utilities in tests for consistency.
 - Compare logged output against expected output in `tests/testOutputLogs/`.
 
 ## Deployment with H3l3n
 
-H3l3n is the successor to M15tr355 for scaffolding and managing tUilKit-enabled projects.
+H3l3n is the preferred scaffolding and migration workflow for tUilKit-enabled projects.
 
 **Creating a New Project with H3l3n**
 1. Run H3l3n scaffolding script.
@@ -264,12 +320,16 @@ H3l3n is the successor to M15tr355 for scaffolding and managing tUilKit-enabled 
 5. Write tests following the testing policy.
 
 **Retrofitting Existing Projects**
-1. Stage project in `SuiteTools/PORTS/<project-name>/`.
+1. Stage project in an active workspace migration/staging area (for example under `Applications/REFACTOR/` or another approved repo-local staging folder).
 2. Run H3l3n retrofit workflow.
 3. Update imports to use tUilKit factories.
 4. Add configuration files.
 5. Migrate logging to tUilKit logger.
-6. Add tests and verify output.
+6. Migrate config keys to current policy:
+  - keep `PATHS.GLOBAL_SHARED.d`
+  - keep per-project `ALT_CONFIG.d`
+  - remove primary-config `SHARED_CONFIG`
+7. Add tests and verify output.
 
 ## Version Control
 
@@ -280,7 +340,7 @@ name = "project-name"
 version = "1.0.0"
 requires-python = ">=3.11"
 dependencies = [
-    "tUilKit>=0.5.1",
+  "tUilKit>=0.6.0",
 ]
 ```
 
@@ -316,13 +376,32 @@ setting = (
 )
 ```
 
+**Shared Config Resolution (GLOBAL_SHARED.d First)**
+```python
+from pathlib import Path
+
+config = config_loader.load_config("PROJECT_CONFIG")
+roots = config.get("ROOTS", {})
+paths = config.get("PATHS", {})
+
+workspace_root = Path(roots.get("WORKSPACE", Path.cwd()))
+global_shared_rel = paths.get("GLOBAL_SHARED.d", "")
+alt_config_rel = paths.get("ALT_CONFIG.d", "config/ALT_CONFIG.d/")
+
+global_shared_dir = (workspace_root / global_shared_rel).resolve() if global_shared_rel else None
+alt_config_dir = (Path.cwd() / alt_config_rel).resolve()
+
+# Load order: workspace shared first, then app ALT overrides.
+```
+
 ## References
 
 - tUilKit import guidelines: `.github/copilot-instructions.d/tuilkit_imports.md`
 - CLI menu patterns: `.github/copilot-instructions.d/cli_menu_patterns.md`
 - Colour key usage: `.github/copilot-instructions.d/colour_key_usage.md`
 - Logging policy: `.github/copilot-instructions.d/logging_policy.md`
-- Testing policy: `.github/copilot-instructions.d/building_tests_policy.md`
+- Testing policy: `.github/copilot-instructions.d/building_examples_policy.md`
+- Root modes and path policy: `.github/copilot-instructions.d/root_modes_workspace_project_paths.md`
 
 ---
-Last updated: 2026-04-18
+Last updated: 2026-05-27

@@ -69,7 +69,7 @@ def _resolve(mode_key: str, path_key: str, fallback: str) -> Path:
 
 
 def _log_targets() -> list[str]:
-    logs_root = _resolve("LOG_PATHS", "LOG_PATHS", ".logs/tUilKit/")
+    logs_root = _resolve("LOGS", "LOGS", ".workspace/.logs/tUilKit/")
     logs_root.mkdir(parents=True, exist_ok=True)
 
     targets: list[str] = []
@@ -120,13 +120,13 @@ def show_config_and_paths() -> None:
         log_line(f"ROOT_MODE[{k}] = {v}", key="!data")
 
     for mk, pk, fb in (
-        ("LOG_PATHS", "LOG_PATHS", ".logs/tUilKit/"),
+        ("LOGS", "LOGS", ".workspace/.logs/tUilKit/"),
         ("CONFIG", "CONFIG", "config/"),
-        ("INPUT_DATA", "INPUT_DATA", ".projects_data/input_data/"),
+        ("INPUTS", "INPUTS", ".projects_data/inputData/tUilKit/"),
     ):
         log_line(f"Resolved {pk}: {_resolve(mk, pk, fb)}", key="!info")
 
-    logs_root = _resolve("LOG_PATHS", "LOG_PATHS", ".logs/tUilKit/")
+    logs_root = _resolve("LOGS", "LOGS", ".workspace/.logs/tUilKit/")
     for log_key, log_file in CONFIG.get("LOG_FILES", {}).items():
         log_line(f"LOG_FILE[{log_key}] -> {logs_root / log_file}", key="!info")
 

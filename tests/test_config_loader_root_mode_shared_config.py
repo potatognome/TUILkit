@@ -30,7 +30,7 @@ def _base_config(workspace: Path, project: Path, config_mode: str) -> dict:
         },
         "SHARED_CONFIG": {
             "ENABLED": True,
-            "PATH": "GLOBAL_SHARED.d",
+            "PATH": "ignored-in-workspace-mode",
             "FILES": {
                 "COLOURS": "COLOURS.json",
             },
@@ -48,7 +48,7 @@ def test_loader_shared_config_uses_workspace_when_root_mode_workspace(tmp_path):
     workspace = tmp_path / "workspace"
     project = workspace / "Core" / "tUilKit"
 
-    workspace_colours = workspace / "config" / "GLOBAL_SHARED.d" / "COLOURS.json"
+    workspace_colours = workspace / "canonical" / "global_shared.d" / "COLOURS.json"
     project_colours = project / "config" / "GLOBAL_SHARED.d" / "COLOURS.json"
     _write_json(workspace_colours, {"palette": "workspace"})
     _write_json(project_colours, {"palette": "project"})
@@ -72,9 +72,30 @@ def test_loader_shared_config_uses_project_when_root_mode_project(tmp_path):
     _write_json(project_colours, {"palette": "project"})
 
     config_path = project / "config" / "tUilKit_CONFIG.json"
-    _write_json(config_path, _base_config(workspace, project, "project"))
+    config = _base_config(workspace, project, "project")
+    config["SHARED_CONFIG"]["PATH"] = "GLOBAL_SHARED.d"
+    _write_json(config_path, config)
 
     loader = ConfigLoader(config_path=str(config_path))
     resolved = loader.get_config_file_path("COLOURS")
 
     assert resolved == str(project_colours)
+
+
+def test_loader_workspace_shared_config_does_not_require_path_field(tmp_path):
+    workspace = tmp_path / "workspace"
+    project = workspace / "Core" / "tUilKit"
+
+    workspace_colours = workspace / "canonical" / "global_shared.d" / "COLOURS.json"
+    _write_json(workspace_colours, {"palette": "workspace"})
+
+    config = _base_config(workspace, project, "workspace")
+    config["SHARED_CONFIG"].pop("PATH", None)
+
+    config_path = project / "config" / "tUilKit_CONFIG.json"
+    _write_json(config_path, config)
+
+    loader = ConfigLoader(config_path=str(config_path))
+    resolved = loader.get_config_file_path("COLOURS")
+
+    assert resolved == str(workspace_colours)

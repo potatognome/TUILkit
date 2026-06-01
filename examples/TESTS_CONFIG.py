@@ -59,7 +59,7 @@ def main() -> int:
         "test_logs_folder": str(_resolve(cfg, "TESTS_LOGS", "TESTS_LOGS", ".tests_logs/tUilKit/")),
         "tests_config_folder": str(_resolve(cfg, "TESTS_CONFIG", "TESTS_CONFIG", ".tests_config/")),
         "config_folder": str(_resolve(cfg, "CONFIG", "CONFIG", "config/")),
-        "logs_folder": str(_resolve(cfg, "LOG_PATHS", "LOG_PATHS", ".logs/tUilKit/")),
+        "logs_folder": str(_resolve(cfg, "LOGS", "LOGS", ".workspace/.logs/tUilKit/")),
         "tests_inputs_folder": str(_resolve(cfg, "TESTS_INPUTS", "TESTS_INPUTS", ".tests_data/inputs/")),
         "tests_outputs_folder": str(_resolve(cfg, "TESTS_OUTPUTS", "TESTS_OUTPUTS", ".tests_data/outputs/")),
     }

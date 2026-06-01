@@ -142,10 +142,17 @@ class ConfigLoader(ConfigLoaderInterface):
                 file_system.validate_and_create_folder(folder, category="fs")
 
     def get_config_file_path(self, config_key: str) -> str:
+        default_shared_files = {
+            "COLOURS": "COLOURS.json",
+            "BORDER_PATTERNS": "BORDER_PATTERNS.json",
+            "FS_OPERATIONS": "FS_OPERATIONS.json",
+            "TESTS_OPTIONS": "TESTS_OPTIONS.json",
+            "TIME_STAMP_OPTIONS": "TIME_STAMP_OPTIONS.json",
+        }
         shared_config = self.global_config.get("SHARED_CONFIG", {})
         shared_enabled = shared_config.get("ENABLED", False)
         shared_path = shared_config.get("PATH", "GLOBAL_SHARED.d/")
-        shared_files = shared_config.get("FILES", {})
+        shared_files = shared_config.get("FILES", {}) or default_shared_files
         roots_cfg = self.global_config.get("ROOTS", {})
         paths_cfg = self.global_config.get("PATHS", {})
         root_modes = self.global_config.get("ROOT_MODES", {})
@@ -155,11 +162,42 @@ class ConfigLoader(ConfigLoaderInterface):
             root_folder = roots_cfg.get("WORKSPACE", os.getcwd())
         else:
             root_folder = roots_cfg.get("PROJECT", os.getcwd())
-        # Construct full path for shared config
-        if shared_enabled and config_key in shared_files:
+        # Construct full path for shared config. Shared config keys are always
+        # treated as global when present in the known mapping.
+        if config_key in shared_files and (shared_enabled or not shared_config):
             shared_file = shared_files[config_key]
-            shared_folder = os.path.join(root_folder, paths_cfg.get("CONFIG", ""), shared_path)
-            full_path = os.path.join(shared_folder, shared_file)
+            configured_global_shared = paths_cfg.get("GLOBAL_SHARED.d", "")
+            if root_mode == "workspace":
+                if configured_global_shared:
+                    shared_candidates = [
+                        os.path.join(root_folder, configured_global_shared),
+                    ]
+                else:
+                    shared_candidates = []
+                # In workspace mode, keep backward-compatible fallbacks.
+                shared_candidates = [
+                    *shared_candidates,
+                    os.path.join(root_folder, "Meta", "canonical", "global_shared.d"),
+                    os.path.join(root_folder, "canonical", "global_shared.d"),
+                    os.path.join(root_folder, ".workspace", ".projects_config", "GLOBAL_SHARED.d"),
+                ]
+                full_path = None
+                for candidate in shared_candidates:
+                    candidate_path = os.path.join(candidate, shared_file)
+                    if os.path.exists(candidate_path):
+                        full_path = candidate_path
+                        break
+                if full_path is None:
+                    full_path = os.path.join(shared_candidates[0], shared_file)
+            else:
+                if configured_global_shared:
+                    shared_folder = os.path.join(
+                        roots_cfg.get("WORKSPACE", root_folder),
+                        configured_global_shared,
+                    )
+                else:
+                    shared_folder = os.path.join(root_folder, paths_cfg.get("CONFIG", ""), shared_path)
+                full_path = os.path.join(shared_folder, shared_file)
             if getattr(self, 'verbose', False):
                 print(f"[ConfigLoader VERBOSE] Constructed shared config path for '{config_key}': {full_path}")
             if os.path.exists(full_path):

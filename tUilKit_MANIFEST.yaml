@@ -1,0 +1,11 @@
+name: tUilKit
+schema_version: '1.0'
+layer: foundation
+description: ''
+capabilities: []
+provides: []
+depends_on: []
+protocols: []
+working_hours: 24/7
+inbox: []
+outbox: []

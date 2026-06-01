@@ -20,9 +20,9 @@ tUilKit uses **semantic colour codes** (e.g., `!data`, `!error`) instead of lite
 **`!reset`** - Neutral/default text
 - **Use**: Neutral separators, blank lines, punctuation glue between semantic segments
 
-**`!info`** - Deprecated alias of `!reset`
-- **Status**: Deprecated
-- **Use**: Avoid in new code
+**`!info`** - Compatibility alias of `!reset`
+- **Status**: Transitional compatibility key
+- **Use**: Prefer `!reset` for new neutral text; keep existing `!info` usage only where migration is not yet complete
 
 **`!data`** - Data values, variables, content
 - **Colour**: Cyan
@@ -547,7 +547,7 @@ logger.colour_log("!test", "Result:", "!pass", "PASSED")
 - Logger implementation: `Projects/tUilKit/src/tUilKit/utils/output.py`
 - CLI menu patterns: `.github/copilot-instructions.d/cli_menu_patterns.md`
 - Logging policy (what/where/when to log): `.github/copilot-instructions.d/logging_policy.md`
-- Test output: `.github/copilot-instructions.d/building_tests_policy.md`
+- Test output: `.github/copilot-instructions.d/building_examples_policy.md`
 
 ---
-Last updated: 2026-05-02
+Last updated: 2026-05-27

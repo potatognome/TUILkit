@@ -62,7 +62,8 @@ config paths.
 | `PATHS["TESTS_LOGS"]`                            | Relative log path segment        |
 | `ROOT_MODES["TESTS_CONFIG"]`                     | Mode for test config folder      |
 | `PATHS["TESTS_CONFIG"]`                          | Relative test config folder      |
-| `SHARED_CONFIG["PATH"]` + `["FILES"]["TESTS_OPTIONS"]` | Shared test options       |
+| `PATHS["GLOBAL_SHARED.d"]`                       | Workspace shared config bundle root |
+| `PATHS["ALT_CONFIG.d"]`                          | App-local optional overrides root |
 
 ### 2.2 TESTS_CONFIG.py Template
 

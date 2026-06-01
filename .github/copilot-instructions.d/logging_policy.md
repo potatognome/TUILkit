@@ -129,7 +129,7 @@ except Exception as e:
 ### 2.5 Test / Assertion / Try Blocks (`!test` / `!pass` / `!fail` → TRY log)
 
 All test runs, assertions, and try-block entries must be logged to the `TRY` log (when defined)
-in addition to SESSION and MASTER.  See `building_tests_policy.md` for full test output format.
+in addition to SESSION and MASTER.  See `building_examples_policy.md` for full test output format.
 
 ---
 
@@ -241,10 +241,6 @@ coloured = logger.colour_path(path, highlight_last_folder=True, colour_key="!pat
 logger.colour_log("!path", f"Path: {coloured}", log_files=list(LOG_FILES.values()))
 ```
 
----
-
-Last updated: 2026-05-02
-
 ## 6. Recommended LOG_FILES Config Block
 
 Include this block (or an equivalent) in the primary `PROJECT_CONFIG.json`:
@@ -269,14 +265,12 @@ Projects may omit sub-logs they do not need, but MASTER and SESSION are always r
 
 ---
 
----
-
-## 6. Function Call Logging Format (Examples / Verbose Test Logging)
+## 7. Function Call Logging Format (Examples / Verbose Test Logging)
 
 In `examples/` scripts, every function under test must produce a structured call log entry
 that records the function called, its arguments, and the outcome.
 
-### 6.1 Standard Call Log Pattern
+### 7.1 Standard Call Log Pattern
 
 For `OUTPUT = function(x, y, z)`:
 
@@ -325,7 +319,7 @@ logger.colour_log(
 logger.log_exception("function raised", e, log_files=log_targets)
 ```
 
-### 6.2 Argument Type Key Selection
+### 7.2 Argument Type Key Selection
 
 Choose the type key that best represents the value:
 
@@ -339,7 +333,7 @@ Choose the type key that best represents the value:
 | List / sequence         | `!list`   |
 | File path               | `!path`   |
 
-### 6.3 Per-Function Log Files
+### 7.3 Per-Function Log Files
 
 Every test function in an `examples/` script must write to a dedicated log file:
 
@@ -356,18 +350,16 @@ log_targets  = [TEST_LOG_FILE, function_log]
 
 All call-log entries must write to both `TEST_LOG_FILE` (session) and `function_log`.
 
-### 6.4 Log All Expected Parameters
+### 7.4 Log All Expected Parameters
 
 Log **all expected parameters** before calling the function, even when some have default values.
 This ensures the log is self-contained and no parameter values are ambiguous.
 
-### 6.5 Complete Example
+### 7.5 Complete Example
 
 ```python
 def test_colour_fstr(function_log=None):
 
----
-Last updated: 2026-05-01
     log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
 
     logger.colour_log(
@@ -412,4 +404,4 @@ Last updated: 2026-05-01
 - Root modes / log paths: `.github/copilot-instructions.d/root_modes_workspace_project_paths.md`
 
 ---
-Last updated: 2026-04-18
+Last updated: 2026-05-27

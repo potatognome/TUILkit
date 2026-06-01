@@ -1,6 +1,6 @@
 # Documentation Guidelines
 
-This document outlines best practices for creating and organizing documentation in Syncbot and other projects in this workspace.
+This document outlines best practices for creating and organizing documentation across Prismata ecosystem projects.
 
 ## Documentation Structure
 
@@ -125,10 +125,13 @@ Rule of thumb: start with `README.md`, `CHANGELOG.md`, and `ROADMAP.md`; expand 
 
 ## Links to Related Guides
 
-- [Syncbot README (v2)](../../Applications/Syncbot/docs/README_V2.md)
-- [Syncbot Quick Start](../../Applications/Syncbot/docs/QUICK_START.md)
-- [Syncbot Changelog](../../Applications/Syncbot/docs/CHANGELOG.md)
-- [tUilKit Development](../../Core/tUilKit/docs/)
-- [H3l3n Project Scaffolding](../../SuiteTools/H3l3n/docs/)
-- [Workspace Copilot Instructions](../copilot-instructions.md)
-- [Testing Policy](building_tests_policy.md)
+- [Workspace Copilot Instructions](../../../.github/copilot-instructions.md)
+- [tUilKit Enabled Apps Guidelines](tuilkit_enabled_apps_guidelines.md)
+- [CLI Menu Patterns](cli_menu_patterns.md)
+- [Logging Policy](logging_policy.md)
+- [Colour Key Usage](colour_key_usage.md)
+- [Building Examples Policy](building_examples_policy.md)
+- [Root Modes Policy](root_modes_workspace_project_paths.md)
+
+---
+Last updated: 2026-05-27

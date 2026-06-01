@@ -10,9 +10,9 @@
         "LICENSE": "",
         "BUILD_TYPE": ""
     },
-    "ROOTS": { 
+    "ROOTS": {
         "PROJECT": "C:/Repository/Daniel/dev_local/Core/tUilKit",
-        "WORKSPACE": "C:/Repository/Daniel/dev_local",
+        "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata",
         "TUILKit": "C:/Repository/Daniel/dev_local/Core/tUilKit"
     },
     "ROOT_MODES": {
@@ -26,18 +26,19 @@
         "TESTS_OUTPUTS": "project"
     },
     "PATHS": {
-        "CONFIG": ".projects_config/",
-        "LOGS": ".logs/tUilKit/",
+        "CONFIG": "config/",
+        "LOGS": "Prismata/.workspace/.logs/tUilKit/",
         "INPUTS": ".projects_data/inputData//tUilKit/",
         "OUTPUTS": ".projects_data/outputData//tUilKit/",
         "TESTS_CONFIG": "tests/.config/",
-        "TESTS_LOGS": "tests/.logs/",
+        "TESTS_LOGS": "Prismata/.workspace/.logs/tUilKit/",
         "TESTS_INPUTS": "tests/.inputData/",
-        "TESTS_OUTPUTS": "tests/.outputData/"
+        "TESTS_OUTPUTS": "tests/.outputData/",
+        "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/"
     },
     "ALT_CONFIG": {
-        "ENABLED": false,
-        "FILE_PATHS": []
+        "FILE_PATHS": [],
+        "ENABLED": false
     },
     "SECONDARY": {
         "FILE": "tUilKit_SECONDARY.json"
