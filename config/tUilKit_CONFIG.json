@@ -1,4 +1,4 @@
-{
+﻿{
     "INFO": {
         "PROJECT_NAME": "tUilKit",
         "PROJECT_FOLDER": "tUilKit",
@@ -11,9 +11,9 @@
         "BUILD_TYPE": ""
     },
     "ROOTS": {
-        "PROJECT": "C:/Repository/Daniel/dev_local/Core/tUilKit",
+        "PROJECT": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit",
         "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata",
-        "TUILKit": "C:/Repository/Daniel/dev_local/Core/tUilKit"
+        "TUILKit": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit"
     },
     "ROOT_MODES": {
         "CONFIG": "workspace",
@@ -121,3 +121,4 @@
         ]
     }
 }
+

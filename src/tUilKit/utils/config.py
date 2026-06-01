@@ -125,13 +125,13 @@ class ConfigLoader(ConfigLoaderInterface):
     def _load_json(self, path):
         if self.verbose:
             print(f"[ConfigLoader] Loading JSON: {path}")
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8-sig") as f:
             return json.load(f)
 
     def load_config(self, json_file_path: str) -> dict:
         if getattr(self, 'verbose', False):
             print(f"[ConfigLoader VERBOSE] Opening config file: {json_file_path}")
-        with open(json_file_path, 'r', encoding='utf-8') as f:
+        with open(json_file_path, 'r', encoding='utf-8-sig') as f:
             return json.load(f)
 
     def ensure_folders_exist(self, file_system: FileSystemInterface):

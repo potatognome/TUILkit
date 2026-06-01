@@ -13,12 +13,12 @@ class AnsiPatch:
         self.value = value
         self.orig = None
     def __enter__(self):
-        import tUilKit.utils.ansi
-        self.orig = tUilKit.utils.ansi.is_ansi_supported
-        tUilKit.utils.ansi.is_ansi_supported = lambda: self.value
+        import tUilKit.utils.ansi as _ansi
+        self.orig = _ansi.is_ansi_supported
+        _ansi.is_ansi_supported = lambda: self.value
     def __exit__(self, exc_type, exc_val, exc_tb):
-        import tUilKit.utils.ansi
-        tUilKit.utils.ansi.is_ansi_supported = self.orig
+        import tUilKit.utils.ansi as _ansi
+        _ansi.is_ansi_supported = self.orig
 
 def test_cursor_ansi_enabled():
     with AnsiPatch(True):
