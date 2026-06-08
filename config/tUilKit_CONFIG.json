@@ -1,4 +1,4 @@
-﻿{
+{
     "INFO": {
         "PROJECT_NAME": "tUilKit",
         "PROJECT_FOLDER": "tUilKit",
@@ -8,11 +8,18 @@
         "MAIN_ENTRY_POINT": "src/tUilKit/__init__.py",
         "COLOUR_FSTR": "!project",
         "LICENSE": "",
-        "BUILD_TYPE": ""
+        "BUILD_TYPE": "",
+        "PROJECT_TYPE": "Infrastructure",
+        "PROJECT_ROLE": "Validation",
+        "PROJECT_INTERFACES": [
+            "CLI Menu",
+            "CLI Args",
+            "API"
+        ]
     },
     "ROOTS": {
         "PROJECT": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit",
-        "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata",
+        "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata/.workspace",
         "TUILKit": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit"
     },
     "ROOT_MODES": {
@@ -26,12 +33,12 @@
         "TESTS_OUTPUTS": "project"
     },
     "PATHS": {
-        "CONFIG": "config/",
-        "LOGS": "Prismata/.workspace/.logs/tUilKit/",
-        "INPUTS": ".projects_data/inputData//tUilKit/",
-        "OUTPUTS": ".projects_data/outputData//tUilKit/",
+        "CONFIG": ".projects_config/",
+        "LOGS": ".logs/tUilKit/",
+        "INPUTS": ".projects_data/inputData/tUilKit/",
+        "OUTPUTS": ".projects_data/outputData/tUilKit/",
         "TESTS_CONFIG": "tests/.config/",
-        "TESTS_LOGS": "Prismata/.workspace/.logs/tUilKit/",
+        "TESTS_LOGS": "tests/.logs/",
         "TESTS_INPUTS": "tests/.inputData/",
         "TESTS_OUTPUTS": "tests/.outputData/",
         "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/"
@@ -121,4 +128,3 @@
         ]
     }
 }
-

@@ -20,16 +20,16 @@ HERE = Path(__file__).resolve()
 _paths_file = HERE.parent / "test_paths.json"
 if not _paths_file.exists():
     raise FileNotFoundError(
-        "test_paths.json not found. Run 'python examples/test_config.py' first."
+        "test_paths.json not found. Run 'python examples/TESTS_CONFIG.py' first."
     )
 with open(_paths_file) as f:
     _p = json.load(f)
 
 PROJECT_ROOT     = Path(_p["project_root"])
 WORKSPACE_ROOT   = Path(_p["workspace_root"])
-TEST_LOGS_FOLDER = Path(_p["test_logs_folder"])
+TESTS_LOGS_FOLDER = Path(_p["test_logs_folder"])
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
-TEST_LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
+TESTS_LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Args
@@ -51,8 +51,8 @@ from tUilKit.factories import get_logger, get_cli_menu_handler
 logger = get_logger()
 menus  = get_cli_menu_handler()
 
-TEST_LOG_FILE  = str(TEST_LOGS_FOLDER / "SESSION.log")
-SCRIPT_LOG     = str(TEST_LOGS_FOLDER / f"{HERE.stem}.log")
+TESTS_LOGS_FILES  = str(TESTS_LOGS_FOLDER / "SESSION.log")
+SCRIPT_LOG     = str(TESTS_LOGS_FOLDER / f"{HERE.stem}.log")
 BORDER_PATTERN = {"TOP": "=", "BOTTOM": "=", "LEFT": "| ", "RIGHT": " |"}
 
 # ---------------------------------------------------------------------------
@@ -60,11 +60,11 @@ BORDER_PATTERN = {"TOP": "=", "BOTTOM": "=", "LEFT": "| ", "RIGHT": " |"}
 # ---------------------------------------------------------------------------
 os.system("cls" if os.name == "nt" else "clear")
 now = datetime.now()
-logger.print_rainbow_row(log_files=[TEST_LOG_FILE])
+logger.print_rainbow_row(log_files=[TESTS_LOGS_FILES])
 logger.colour_log(
     "!date", now.strftime("%Y-%m-%d %H:%M:%S"),
     "!proc", "Starting examples:", "!text", HERE.stem,
-    log_files=[TEST_LOG_FILE]
+    log_files=[TESTS_LOGS_FILES]
 )
 
 # ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ BREAK_INPUTS = [
 
 def test_show_numbered_menu(function_log=None):
     """Tests CLIMenuHandler.show_numbered_menu — all inputs including break inputs."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     # --- call header ---
     logger.colour_log(
@@ -166,7 +166,7 @@ def test_show_numbered_menu(function_log=None):
 
 def test_confirm(function_log=None):
     """Tests CLIMenuHandler.confirm — y/n prompt with defaults and break inputs."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "confirm",
@@ -223,7 +223,7 @@ def test_confirm(function_log=None):
 
 def test_prompt_with_default(function_log=None):
     """Tests CLIMenuHandler.prompt_with_default — input with optional default and validator."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "prompt_with_default",
@@ -284,7 +284,7 @@ def test_prompt_with_default(function_log=None):
 
 def test_get_numeric_choice(function_log=None):
     """Tests CLIMenuHandler.get_numeric_choice — bounded integer input with cancel."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "get_numeric_choice",
@@ -349,7 +349,7 @@ def test_get_numeric_choice(function_log=None):
 
 def test_show_info_screen(function_log=None):
     """Tests CLIMenuHandler.show_info_screen — displays a dict of label:value pairs."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "(side-effect)", "!proc", "CLIMenuHandler.", "!text", "show_info_screen",
@@ -365,7 +365,7 @@ def test_show_info_screen(function_log=None):
         "Version":   "0.5.0",
         "Author":    "Daniel Austin",
         "Root":      str(PROJECT_ROOT),
-        "Log Folder": str(TEST_LOGS_FOLDER),
+        "Log Folder": str(TESTS_LOGS_FOLDER),
     }
 
     # wait_for_input=False so we don't hang
@@ -397,7 +397,7 @@ def test_show_info_screen(function_log=None):
 
 def test_edit_key_value_pairs(function_log=None):
     """Tests CLIMenuHandler.edit_key_value_pairs — interactive dict editor."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "edit_key_value_pairs",
@@ -448,7 +448,7 @@ def test_edit_key_value_pairs(function_log=None):
 
 def test_browse_directory(function_log=None):
     """Tests CLIMenuHandler.browse_directory — directory navigator with mock input."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "browse_directory",
@@ -493,7 +493,7 @@ def test_browse_directory(function_log=None):
 
 def test_show_menu_with_preview(function_log=None):
     """Tests CLIMenuHandler.show_menu_with_preview — preview function integration."""
-    log_targets = [TEST_LOG_FILE, function_log] if function_log else [TEST_LOG_FILE]
+    log_targets = [TESTS_LOGS_FILES, function_log] if function_log else [TESTS_LOGS_FILES]
 
     logger.colour_log(
         "!output", "result =", "!proc", "CLIMenuHandler.", "!text", "show_menu_with_preview",
@@ -566,24 +566,24 @@ successful: list = []
 unsuccessful: list = []
 
 for num, name, func, description in Examples:
-    function_log = str(TEST_LOGS_FOLDER / f"test_log_{name}.log")
+    function_log = str(TESTS_LOGS_FOLDER / f"test_log_{name}.log")
     try:
-        logger.print_rainbow_row(log_files=[TEST_LOG_FILE, function_log])
+        logger.print_rainbow_row(log_files=[TESTS_LOGS_FILES, function_log])
         logger.apply_border(
             f"Test {num}: {name}", BORDER_PATTERN, total_length=70,
-            log_files=[TEST_LOG_FILE, function_log],
+            log_files=[TESTS_LOGS_FILES, function_log],
             border_colour="!proc", text_colour="!text"
         )
         logger.colour_log(
             "!test", "Running:", "!int", num, "!proc", name,
             "!info", "—", "!data", description,
-            log_files=[TEST_LOG_FILE, function_log]
+            log_files=[TESTS_LOGS_FILES, function_log]
         )
         time.sleep(0.3)
         func(function_log=function_log)
         logger.colour_log(
             "!pass", "✅ PASSED:", "!int", num, "!proc", name,
-            log_files=[TEST_LOG_FILE, function_log]
+            log_files=[TESTS_LOGS_FILES, function_log]
         )
         results.append((num, name, True))
         successful.append(name)
@@ -591,14 +591,14 @@ for num, name, func, description in Examples:
         logger.colour_log(
             "!fail", "❌ ASSERTION FAILED:", "!int", num,
             "!error", str(e),
-            log_files=[TEST_LOG_FILE, function_log]
+            log_files=[TESTS_LOGS_FILES, function_log]
         )
         results.append((num, name, False))
         unsuccessful.append(name)
     except Exception as e:
         logger.log_exception(
             f"Test {num} {name} raised unexpectedly", e,
-            log_files=[TEST_LOG_FILE, function_log]
+            log_files=[TESTS_LOGS_FILES, function_log]
         )
         results.append((num, name, False))
         unsuccessful.append(name)
@@ -606,22 +606,22 @@ for num, name, func, description in Examples:
 # ===========================================================================
 # Summary
 # ===========================================================================
-logger.print_rainbow_row(log_files=[TEST_LOG_FILE])
-logger.apply_border("Test Summary", BORDER_PATTERN, total_length=70, log_files=[TEST_LOG_FILE])
+logger.print_rainbow_row(log_files=[TESTS_LOGS_FILES])
+logger.apply_border("Test Summary", BORDER_PATTERN, total_length=70, log_files=[TESTS_LOGS_FILES])
 logger.colour_log(
     "!info",  "Total:",  "!int", len(results),
     "!done",  "Passed:", "!int", len(successful),
     "!error", "Failed:", "!int", len(unsuccessful),
-    log_files=[TEST_LOG_FILE]
+    log_files=[TESTS_LOGS_FILES]
 )
 for num, name, passed in results:
     key = "!pass" if passed else "!fail"
     logger.colour_log("!int", num, key, "PASS" if passed else "FAIL", "!proc", name,
-                      log_files=[TEST_LOG_FILE])
+                      log_files=[TESTS_LOGS_FILES])
 
 elapsed = (datetime.now() - now).total_seconds()
 logger.colour_log(
     "!date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     "!info", "Duration:", "!float", f"{elapsed:.2f}s",
-    log_files=[TEST_LOG_FILE]
+    log_files=[TESTS_LOGS_FILES]
 )

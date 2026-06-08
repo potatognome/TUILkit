@@ -179,7 +179,7 @@ class ConfigLoader(ConfigLoaderInterface):
                     *shared_candidates,
                     os.path.join(root_folder, "Meta", "canonical", "global_shared.d"),
                     os.path.join(root_folder, "canonical", "global_shared.d"),
-                    os.path.join(root_folder, ".workspace", ".projects_config", "GLOBAL_SHARED.d"),
+                    os.path.join(root_folder, ".projects_config", "GLOBAL_SHARED.d"),
                 ]
                 full_path = None
                 for candidate in shared_candidates:

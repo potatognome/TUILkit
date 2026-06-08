@@ -1,11 +1,30 @@
+id: prismata.core.tUilKit
 name: tUilKit
-schema_version: '1.0'
-layer: foundation
-description: ''
+version: 0.1.0
+description: 'Shared utility foundation for configuration loading, logging, CLI flows,
+  terminal rendering, and filesystem helpers across the Prismata ecosystem.
+
+  '
 capabilities: []
-provides: []
+interfaces:
+  exposes: []
+  consumes:
+  - schema
+  - manifest
+dependencies:
+- tUilKit
+tags:
+- core
+- tuilkit
+metadata:
+  area: Core
+  source_path: Core/tUilKit
+  destination_path: Projects/Core/tUilKit
+  migration_phase: phase-1-core-foundation
+  history_strategy: subtree-merge
+  packaging: pyproject
+layer: foundation
 depends_on: []
+provides: []
 protocols: []
-working_hours: 24/7
-inbox: []
-outbox: []
+schema_version: '1.0'

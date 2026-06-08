@@ -21,7 +21,7 @@ TESTS_CONFIG_FILE = HERE.parent / "TESTS_CONFIG.py"
 if not TEST_PATHS_FILE.exists():
     subprocess.run([sys.executable, str(TESTS_CONFIG_FILE)], check=True)
 
-PATHS = json.loads(TEST_PATHS_FILE.read_text(encoding="utf-8"))
+PATHS = json.loads(TEST_PATHS_FILE.read_text(encoding="utf-8-sig"))
 PROJECT_ROOT = Path(PATHS["project_root"]).resolve()
 WORKSPACE_ROOT = Path(PATHS["workspace_root"]).resolve()
 

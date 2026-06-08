@@ -83,36 +83,10 @@ def get_logger():
     """
     global _logger
     if _logger is None:
-        from tUilKit.utils.output import Logger
+        from tUilKit.utils.output import Logger, _resolve_log_files_from_config
         colour_manager = get_colour_manager()
         config_loader = get_config_loader()
-        root_modes = config_loader.global_config.get("ROOT_MODES", {})
-        log_root_mode = root_modes.get("LOGS", "project")
-        log_files_dict = config_loader.global_config.get("LOG_FILES", {})
-        resolved_log_files = {}
-        if log_root_mode == "workspace":
-            workspace_root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
-            for key in log_files_dict:
-                if not os.path.isabs(log_files_dict[key]):
-                    resolved_log_files[key] = os.path.join(workspace_root, log_files_dict[key])
-                else:
-                    resolved_log_files[key] = log_files_dict[key]
-        elif log_root_mode == "auto":
-            workspace_root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
-            for key in log_files_dict:
-                if not os.path.isabs(log_files_dict[key]):
-                    resolved_log_files[key] = os.path.join(workspace_root, log_files_dict[key])
-                else:
-                    resolved_log_files[key] = log_files_dict[key]
-        elif log_root_mode == "project":
-            project_root = os.path.abspath(os.path.join(os.getcwd(), "Dev", "tUilKit"))
-            for key in log_files_dict:
-                if not os.path.isabs(log_files_dict[key]):
-                    resolved_log_files[key] = os.path.join(project_root, log_files_dict[key])
-                else:
-                    resolved_log_files[key] = log_files_dict[key]
-        else:
-            resolved_log_files = log_files_dict
+        resolved_log_files = _resolve_log_files_from_config(config_loader)
         _logger = Logger(colour_manager, log_files=resolved_log_files)
     return _logger
 

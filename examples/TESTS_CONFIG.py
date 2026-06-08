@@ -17,7 +17,7 @@ from typing import Dict
 
 HERE = Path(__file__).resolve()
 PROJECT_ROOT = next((p for p in HERE.parents if (p / "pyproject.toml").exists()), HERE.parents[1])
-WORKSPACE_ROOT = PROJECT_ROOT.parents[1]
+
 
 SRC_ROOT = PROJECT_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
@@ -36,15 +36,25 @@ def _load_config() -> Dict:
     return loader.load_config(str(cfg_path))
 
 
-def _resolve(cfg: Dict, mode_key: str, path_key: str, fallback: str) -> Path:
+def _workspace_root_from_config(cfg: Dict) -> Path:
+    roots = cfg.get("ROOTS", {}) if isinstance(cfg.get("ROOTS", {}), dict) else {}
+    configured = roots.get("WORKSPACE")
+    if configured:
+        return Path(str(configured)).resolve()
+    # .../Prismata/Projects/Core/tUilKit -> .../Prismata
+    return PROJECT_ROOT.parents[2].resolve()
+
+
+def _resolve(cfg: Dict, workspace_root: Path, mode_key: str, path_key: str, fallback: str) -> Path:
     mode = str(cfg.get("ROOT_MODES", {}).get(mode_key, "project")).lower()
-    base = WORKSPACE_ROOT if mode == "workspace" else PROJECT_ROOT
+    base = workspace_root if mode == "workspace" else PROJECT_ROOT
     rel = str(cfg.get("PATHS", {}).get(path_key, fallback))
     return (base / rel).resolve()
 
 
 def main() -> int:
     cfg = _load_config()
+    workspace_root = _workspace_root_from_config(cfg)
 
     # Calculate tUilKit config path (tUilKit's own config)
     tuilkit_config_path = PROJECT_ROOT / "config" / "tUilKit_CONFIG.json"
@@ -55,13 +65,13 @@ def main() -> int:
         "tuilkit_config_file": str(tuilkit_config_path.resolve()),
         "examples_folder": str(HERE.parent.resolve()),
         "project_root": str(PROJECT_ROOT.resolve()),
-        "workspace_root": str(WORKSPACE_ROOT.resolve()),
-        "test_logs_folder": str(_resolve(cfg, "TESTS_LOGS", "TESTS_LOGS", ".tests_logs/tUilKit/")),
-        "tests_config_folder": str(_resolve(cfg, "TESTS_CONFIG", "TESTS_CONFIG", ".tests_config/")),
-        "config_folder": str(_resolve(cfg, "CONFIG", "CONFIG", "config/")),
-        "logs_folder": str(_resolve(cfg, "LOGS", "LOGS", ".workspace/.logs/tUilKit/")),
-        "tests_inputs_folder": str(_resolve(cfg, "TESTS_INPUTS", "TESTS_INPUTS", ".tests_data/inputs/")),
-        "tests_outputs_folder": str(_resolve(cfg, "TESTS_OUTPUTS", "TESTS_OUTPUTS", ".tests_data/outputs/")),
+        "workspace_root": str(workspace_root),
+        "test_logs_folder": str(_resolve(cfg, workspace_root, "TESTS_LOGS", "TESTS_LOGS", ".tests_logs/tUilKit/")),
+        "tests_config_folder": str(_resolve(cfg, workspace_root, "TESTS_CONFIG", "TESTS_CONFIG", ".tests_config/")),
+        "config_folder": str(_resolve(cfg, workspace_root, "CONFIG", "CONFIG", "config/")),
+        "logs_folder": str(_resolve(cfg, workspace_root, "LOGS", "LOGS", ".workspace/.logs/tUilKit/")),
+        "tests_inputs_folder": str(_resolve(cfg, workspace_root, "TESTS_INPUTS", "TESTS_INPUTS", ".tests_data/inputs/")),
+        "tests_outputs_folder": str(_resolve(cfg, workspace_root, "TESTS_OUTPUTS", "TESTS_OUTPUTS", ".tests_data/outputs/")),
     }
 
     for key in ("test_logs_folder", "tests_inputs_folder", "tests_outputs_folder"):

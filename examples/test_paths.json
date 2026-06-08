@@ -1,8 +1,14 @@
 {
-    "examples_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\examples",
-    "project_root": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit",
-    "workspace_root": "C:\\Repository\\Daniel\\dev_local",
-    "test_logs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.logs\\tUilKit",
-    "test_config_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\tests\\.config",
-    "config_folder": "C:\\Repository\\Daniel\\dev_local\\Core\\tUilKit\\config"
+  "project_name": "tUilKit",
+  "config_file": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\config\\tUilKit_CONFIG.json",
+  "tuilkit_config_file": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\config\\tUilKit_CONFIG.json",
+  "examples_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\examples",
+  "project_root": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit",
+  "workspace_root": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace",
+  "test_logs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\tests\\.logs",
+  "tests_config_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\tests\\.config",
+  "config_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.projects_config",
+  "logs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.logs\\tUilKit",
+  "tests_inputs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\tests\\.inputData",
+  "tests_outputs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\Projects\\Core\\tUilKit\\tests\\.outputData"
 }

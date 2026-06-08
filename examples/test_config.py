@@ -8,15 +8,17 @@ import sys
 import json
 from pathlib import Path
 
+from tUilKit.factories import get_config_loader
+
 HERE = Path(__file__).resolve()
 PROJECT_ROOT   = next(p for p in HERE.parents if (p / "pyproject.toml").exists())
-WORKSPACE_ROOT = next(p for p in PROJECT_ROOT.parents if (p / "dev_local.code-workspace").exists())
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-from tUilKit.factories import get_config_loader
 
 config_loader = get_config_loader()
 config        = config_loader.global_config
+WORKSPACE_ROOT = Path(
+    config.get("ROOTS", {}).get("WORKSPACE", PROJECT_ROOT.parents[2])
+).resolve()
 
 
 def _resolve(mode_key: str, path_key: str) -> Path:
