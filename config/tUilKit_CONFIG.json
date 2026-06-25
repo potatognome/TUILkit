@@ -4,7 +4,7 @@
         "PROJECT_FOLDER": "tUilKit",
         "PROJECT_DESCRIPTION": "Core utility toolkit for CLI apps: colour management, filesystem helpers, JSON config, dataframe utilities, logging, a command line menu interface, and testing framework.",
         "AUTHOR": "Daniel Austin <the.potato.gnome@gmail.com>",
-        "VERSION": "1.0.1",
+        "VERSION": "1.0.2",
         "MAIN_ENTRY_POINT": "src/tUilKit/__init__.py",
         "COLOUR_FSTR": "!project",
         "LICENSE": "",
@@ -19,7 +19,7 @@
     },
     "ROOTS": {
         "PROJECT": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit",
-        "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata/.workspace",
+        "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata",
         "TUILKit": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit"
     },
     "ROOT_MODES": {
@@ -27,20 +27,20 @@
         "LOGS": "workspace",
         "INPUTS": "workspace",
         "OUTPUTS": "workspace",
-        "TESTS_CONFIG": "project",
-        "TESTS_LOGS": "project",
-        "TESTS_INPUTS": "project",
-        "TESTS_OUTPUTS": "project"
+        "TESTS_CONFIG": "workspace",
+        "TESTS_LOGS": "workspace",
+        "TESTS_INPUTS": "workspace",
+        "TESTS_OUTPUTS": "workspace"
     },
     "PATHS": {
-        "CONFIG": ".projects_config/",
-        "LOGS": ".logs/tUilKit/",
-        "INPUTS": ".projects_data/inputData/tUilKit/",
-        "OUTPUTS": ".projects_data/outputData/tUilKit/",
-        "TESTS_CONFIG": "tests/.config/",
-        "TESTS_LOGS": "tests/.logs/",
-        "TESTS_INPUTS": "tests/.inputData/",
-        "TESTS_OUTPUTS": "tests/.outputData/",
+        "CONFIG": ".workspace/.projects_config/",
+        "LOGS": ".workspace/.logs/tUilKit/",
+        "INPUTS": ".workspace/.projects_data/inputData/tUilKit/",
+        "OUTPUTS": ".workspace/.projects_data/outputData/tUilKit/",
+        "TESTS_CONFIG": ".workspace/tests/.config/",
+        "TESTS_LOGS": ".workspace/tests/.logs/",
+        "TESTS_INPUTS": ".workspace/tests/.inputData/",
+        "TESTS_OUTPUTS": ".workspace/tests/.outputData/",
         "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/"
     },
     "ALT_CONFIG": {

@@ -3,7 +3,14 @@ tUilKit
 # Project Name
 tUilKit
 
-**Current version: 0.6.0**
+**Current version: 0.6.1**
+
+## Recent Enhancements (v0.6.1)
+
+- **Menu engine index and reserved-action fixes** (`tUilKit.utils.cli_menus`):
+    - Submenu numbering now consistently renders as `0` (Back) plus `1..N` for normal actions.
+    - Removed duplicate reserved entry collisions that could map both Back and Cancel to `0`.
+- **Tenant DSL rollout support**: improved stability for menu trees loaded from `.workspace/projects.menus/<tenant>/` using `render_tenant_menu_tree()`.
 
 ## Recent Enhancements (v0.6.0)
 

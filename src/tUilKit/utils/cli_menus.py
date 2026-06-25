@@ -5,8 +5,14 @@ Implementation of CLIMenuInterface for building interactive command-line menus.
 
 import os
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Callable
+
+try:
+    import yaml
+except Exception:  # pragma: no cover - optional dependency fallback
+    yaml = None
 
 # Add the base directory of the project to the system path
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..\\..\\'))
@@ -17,6 +23,61 @@ from tUilKit.interfaces.cli_menu_interface import CLIMenuInterface
 from tUilKit.interfaces.logger_interface import LoggerInterface
 from tUilKit.utils.output import Logger, ColourManager
 from tUilKit.utils.config import ConfigLoader
+from tUilKit.factories import get_logger
+
+
+class _FallbackLogger:
+    def apply_border(self, text, pattern, total_length=60, border_rainbow=False, **kwargs):
+        top = str(pattern.get("TOP", "="))
+        bottom = str(pattern.get("BOTTOM", "="))
+        print(top * total_length)
+        print(text)
+        print(bottom * total_length)
+
+    def colour_log(self, *args, **kwargs):
+        parts = [str(part) for part in args if not str(part).startswith("!")]
+        print(" ".join(parts))
+
+
+@dataclass
+class MenuObject:
+    key: str
+    name: str
+    icon: str = ""
+    colourstring: str = "!info"
+    position: Optional[str] = None
+    order: int = 100
+    parent: Optional[str] = None
+    children: List[str] = field(default_factory=list)
+    description: str = ""
+    visibilityMode: str = "visible"
+    visibilityCondition: Optional[str] = None
+    visibilityDependencies: List[str] = field(default_factory=list)
+    enableMode: str = "enabled"
+    enableCondition: Optional[str] = None
+    enableDependencies: List[str] = field(default_factory=list)
+    reserved: bool = False
+
+    @classmethod
+    def from_dict(cls, raw: Dict[str, Any]) -> "MenuObject":
+        return cls(
+            key=str(raw.get("key", "")).strip(),
+            name=str(raw.get("name", raw.get("label", ""))).strip(),
+            icon=str(raw.get("icon", "")).strip(),
+            colourstring=str(raw.get("colourstring", "!info")).strip() or "!info",
+            position=raw.get("position"),
+            order=int(raw.get("order", 100)),
+            parent=raw.get("parent"),
+            children=list(raw.get("children", []) or []),
+            description=str(raw.get("description", "")),
+            visibilityMode=str(raw.get("visibilityMode", "visible")).strip(),
+            visibilityCondition=raw.get("visibilityCondition"),
+            visibilityDependencies=list(raw.get("visibilityDependencies", []) or []),
+            enableMode=str(raw.get("enableMode", "enabled")).strip(),
+            enableCondition=raw.get("enableCondition"),
+            enableDependencies=list(raw.get("enableDependencies", []) or []),
+            reserved=bool(raw.get("reserved", False)),
+        )
 
 
 class CLIMenuHandler(CLIMenuInterface):
@@ -32,9 +93,216 @@ class CLIMenuHandler(CLIMenuInterface):
         Args:
             logger: Optional LoggerInterface instance (creates default if None)
         """
-        self.logger = logger or Logger()
-        config_loader = ConfigLoader()
-        self.log_files = config_loader.global_config.get("LOG_FILES", {})
+        if logger is not None:
+            self.logger = logger
+        else:
+            try:
+                self.logger = get_logger()
+            except Exception:
+                self.logger = _FallbackLogger()
+        try:
+            self.config_loader = ConfigLoader()
+            self.config = self.config_loader.global_config
+        except Exception:
+            self.config_loader = None
+            self.config = {}
+        self.log_files = self.config.get("LOG_FILES", {})
+        roots = self.config.get("ROOTS", {}) if isinstance(self.config.get("ROOTS", {}), dict) else {}
+        self.workspace_root = Path(str(roots.get("WORKSPACE", Path.cwd()))).resolve()
+        self.menu_root = self.workspace_root / "projects.menus"
+        self.menu_registry: Dict[str, Dict[str, Any]] = {
+            "menu_types": {},
+            "menu_items": {},
+        }
+
+    def _load_yaml_file(self, path: Path) -> Dict[str, Any]:
+        if not path.exists():
+            return {}
+        text = path.read_text(encoding="utf-8-sig")
+        if yaml is not None:
+            loaded = yaml.safe_load(text) or {}
+            return loaded if isinstance(loaded, dict) else {}
+        return {}
+
+    def _evaluate_visibility(self, item: MenuObject, context: Optional[Dict[str, Any]]) -> bool:
+        if item.visibilityMode == "invisible":
+            return False
+        if item.visibilityMode == "always":
+            return True
+        context = context or {}
+        if item.visibilityCondition and not bool(context.get(item.visibilityCondition, False)):
+            return False
+        for dep in item.visibilityDependencies:
+            if not bool(context.get(dep, False)):
+                return False
+        return True
+
+    def _evaluate_enablement(self, item: MenuObject, context: Optional[Dict[str, Any]]) -> bool:
+        if item.enableMode in {"disabled", "off"}:
+            return False
+        if item.enableMode == "always":
+            return True
+        context = context or {}
+        if item.enableCondition and not bool(context.get(item.enableCondition, False)):
+            return False
+        for dep in item.enableDependencies:
+            if not bool(context.get(dep, False)):
+                return False
+        return True
+
+    def _inject_reserved_entries(self, items: List[MenuObject], is_main_menu: bool) -> List[MenuObject]:
+        reserved: List[MenuObject] = []
+        if is_main_menu:
+            reserved.append(
+                MenuObject(
+                    key="quit",
+                    name="Quit Application",
+                    icon="🚪",
+                    colourstring="!warn",
+                    order=0,
+                    reserved=True,
+                )
+            )
+            # q/Q remains reserved but invisible from visual index.
+            reserved.append(
+                MenuObject(
+                    key="__reserved_q__",
+                    name="Quit alias",
+                    icon="",
+                    colourstring="!warn",
+                    order=0,
+                    reserved=True,
+                    visibilityMode="invisible",
+                )
+            )
+        else:
+            reserved.extend([
+                MenuObject(
+                    key="back",
+                    name="Back",
+                    icon="↩️",
+                    colourstring="!warn",
+                    order=0,
+                    reserved=True,
+                ),
+            ])
+
+        non_reserved = [item for item in items if not item.reserved]
+        return [*reserved, *non_reserved]
+
+    def _sort_items(self, items: List[MenuObject]) -> List[MenuObject]:
+        return sorted(
+            items,
+            key=lambda item: (0 if item.reserved else 1, int(item.order), item.name.lower()),
+        )
+
+    def load_menu_tree(self, tenant: str) -> Dict[str, Any]:
+        tenant_root = self.menu_root / tenant
+        menu_tree = self._load_yaml_file(tenant_root / "menu-tree.yaml")
+        menu_items = self._load_yaml_file(tenant_root / "menu-items.yaml")
+        overrides = self._load_yaml_file(tenant_root / "registry-overrides.yaml")
+        conditions = self._load_yaml_file(tenant_root / "conditions.yaml")
+
+        self.menu_registry["menu_types"][tenant] = overrides.get("menu_types", {})
+        self.menu_registry["menu_items"][tenant] = menu_items.get("items", {})
+
+        return {
+            "tenant": tenant,
+            "menu_tree": menu_tree,
+            "menu_items": menu_items,
+            "overrides": overrides,
+            "conditions": conditions,
+        }
+
+    def render_tenant_menu_tree(
+        self,
+        tenant: str,
+        *,
+        menu_key: str = "main",
+        auto_mode: bool = False,
+    ) -> Optional[str]:
+        """Load a tenant DSL tree from .workspace/projects.menus and render it."""
+        payload = self.load_menu_tree(tenant)
+        tree = payload.get("menu_tree", {})
+        item_map = payload.get("menu_items", {}).get("items", {})
+        conditions = payload.get("conditions", {}).get("conditions", {})
+
+        menus = tree.get("menus", []) if isinstance(tree.get("menus", []), list) else []
+        menu = next((m for m in menus if str(m.get("key", "")) == menu_key), None)
+        if not menu:
+            self.logger.colour_log("!error", f"❌ Menu '{menu_key}' not found for tenant '{tenant}'")
+            return None
+
+        items = []
+        for key in menu.get("items", []):
+            if key in item_map:
+                items.append(item_map[key])
+
+        return self.render_menu_object_model(
+            title=str(menu.get("name", menu_key)).strip() or "Menu",
+            items=items,
+            context=conditions,
+            is_main_menu=bool(menu.get("is_main_menu", False)),
+            auto_mode=auto_mode or bool(conditions.get("auto_mode", False)),
+        )
+
+    def render_menu_object_model(
+        self,
+        title: str,
+        items: List[Dict[str, Any]],
+        *,
+        context: Optional[Dict[str, Any]] = None,
+        is_main_menu: bool = True,
+        auto_mode: bool = False,
+    ) -> Optional[str]:
+        typed = [MenuObject.from_dict(item) for item in items]
+        typed = self._inject_reserved_entries(typed, is_main_menu=is_main_menu)
+        typed = self._sort_items(typed)
+
+        visible_items = [item for item in typed if self._evaluate_visibility(item, context)]
+        enabled_items = [item for item in visible_items if self._evaluate_enablement(item, context)]
+
+        if auto_mode:
+            non_reserved = [item for item in enabled_items if not item.reserved]
+            if len(non_reserved) == 1:
+                return non_reserved[0].key
+
+        print()
+        self.logger.apply_border(
+            text=title,
+            pattern={"TOP": "=", "BOTTOM": "=", "LEFT": " ", "RIGHT": " "},
+            total_length=60,
+            border_rainbow=True,
+        )
+        print()
+
+        index_map: Dict[str, str] = {}
+        non_reserved_idx = 0
+        for item in enabled_items:
+            if item.key == "__reserved_q__":
+                continue
+
+            if item.key in {"quit", "back", "cancel"}:
+                display_index = "0"
+            else:
+                non_reserved_idx += 1
+                display_index = str(non_reserved_idx)
+            index_map[display_index] = item.key
+
+            self.logger.colour_log(
+                "!list", display_index,
+                item.colourstring if item.colourstring.startswith("!") else "!info",
+                f". {item.icon} {item.name}".strip(),
+            )
+
+        choice = input("\nSelect option: ").strip()
+        choice_lower = choice.lower()
+
+        # Invisible reserved quit alias.
+        if choice_lower in {"q", "quit"}:
+            return "quit"
+
+        return index_map.get(choice_lower) or index_map.get(choice)
     
     def show_numbered_menu(
         self, 
@@ -55,57 +323,43 @@ class CLIMenuHandler(CLIMenuInterface):
         Returns:
             Selected option key, 'back', 'quit', or None if invalid
         """
-        print()  # Blank line for spacing
-        self.logger.apply_border(
-            text=title,
-            pattern={"TOP": "=", "BOTTOM": "=", "LEFT": " ", "RIGHT": " "},
-            total_length=60,
-            border_rainbow=True
+        menu_objects: List[Dict[str, Any]] = []
+        for index, option in enumerate(options, start=1):
+            menu_objects.append(
+                {
+                    "key": option.get("key", f"option_{index}"),
+                    "name": option.get("name", option.get("label", f"Option {index}")),
+                    "icon": option.get("icon", "📋"),
+                    "colourstring": option.get("colourstring", "!info"),
+                    "position": option.get("position", "body"),
+                    "order": option.get("order", index),
+                    "parent": option.get("parent"),
+                    "children": option.get("children", []),
+                    "description": option.get("description", ""),
+                    "visibilityMode": option.get("visibilityMode", "visible"),
+                    "visibilityCondition": option.get("visibilityCondition"),
+                    "visibilityDependencies": option.get("visibilityDependencies", []),
+                    "enableMode": option.get("enableMode", "enabled"),
+                    "enableCondition": option.get("enableCondition"),
+                    "enableDependencies": option.get("enableDependencies", []),
+                }
+            )
+
+        selected = self.render_menu_object_model(
+            title,
+            menu_objects,
+            is_main_menu=allow_quit and not allow_back,
+            auto_mode=bool(option.get("auto_mode", False) if options else False),
         )
-        print()
-        
-        # Display options
-        for i, option in enumerate(options, 1):
-            icon = option.get('icon', '📋')
-            label = option.get('label', f"Option {i}")
-            self.logger.colour_log("!list", str(i), "!info", f". {icon} {label}")
-        
-        # Add back/quit options
-        extra_options = []
-        if allow_back:
-            extra_options.append("'back'")
-        if allow_quit:
-            extra_options.append("'quit'")
-        
-        # Build prompt
-        max_num = len(options)
-        prompt_parts = [f"1-{max_num}"]
-        if extra_options:
-            prompt_parts.append(" or " + ", ".join(extra_options))
-        
-        prompt = f"\nSelect option ({','.join(prompt_parts)}): "
-        choice = input(prompt).strip().lower()
-        
-        # Log the selection
-        self.logger.colour_log("!prompt", "Selected: ", "!selection", f"{choice}")
-        
-        # Handle back/quit
-        if allow_back and choice in ['back', 'b']:
-            return 'back'
-        if allow_quit and choice in ['quit', 'q', 'exit']:
-            return 'quit'
-        
-        # Handle numeric selection
-        try:
-            choice_num = int(choice)
-            if 1 <= choice_num <= len(options):
-                return options[choice_num - 1].get('key')
-            else:
-                self.logger.colour_log("!error", f"❌ Please select 1-{len(options)}")
-                return None
-        except ValueError:
+
+        if selected in {"quit", "back", "cancel"}:
+            if selected == "cancel" and allow_back:
+                return "back"
+            return selected
+
+        if selected is None:
             self.logger.colour_log("!error", "❌ Invalid input")
-            return None
+        return selected
     
     def browse_directory(
         self, 

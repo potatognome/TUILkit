@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.1 - 2026-06-08
+
+### Added
+- Expanded tenant DSL menu-tree support in active Prismata applications via `render_tenant_menu_tree()` rollouts.
+
+### Fixed
+- `CLIMenuHandler` submenu index rendering now starts user-selectable items at `1` while preserving `0` for reserved navigation actions.
+- Removed duplicate reserved action collisions in submenus by standardizing submenu reserved injection to a single `Back` action.
+
+### Changed
+- Improved consistency of shared CLI menu behavior across tenant and infrastructure apps using the common menu engine.
+
 ## 0.6.0 - 2026-05-06
 
 ### Added
