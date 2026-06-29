@@ -9,8 +9,8 @@
         "COLOUR_FSTR": "!project",
         "LICENSE": "",
         "BUILD_TYPE": "",
-        "PROJECT_TYPE": "Infrastructure",
-        "PROJECT_ROLE": "Validation",
+        "PROJECT_TYPE": "Core",
+        "PROJECT_ROLE": "Foundational Substrate",
         "PROJECT_INTERFACES": [
             "CLI Menu",
             "CLI Args",
@@ -35,20 +35,17 @@
     "PATHS": {
         "CONFIG": ".workspace/.projects_config/",
         "LOGS": ".workspace/.logs/tUilKit/",
-        "INPUTS": ".workspace/.projects_data/inputData/tUilKit/",
-        "OUTPUTS": ".workspace/.projects_data/outputData/tUilKit/",
-        "TESTS_CONFIG": ".workspace/tests/.config/",
-        "TESTS_LOGS": ".workspace/tests/.logs/",
-        "TESTS_INPUTS": ".workspace/tests/.inputData/",
-        "TESTS_OUTPUTS": ".workspace/tests/.outputData/",
+        "INPUTS": ".workspace/.projects_data/inputs/tUilKit/",
+        "OUTPUTS": ".workspace/.projects_data/outputs/tUilKit/",
+        "TESTS_CONFIG": ".workspace/.tests_config/",
+        "TESTS_LOGS": ".workspace/.tests_logs/",
+        "TESTS_INPUTS": ".workspace/.tests_data/inputs/tUilKit/",
+        "TESTS_OUTPUTS": ".workspace/.tests_data/outputs/tUilKit/",
         "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/"
     },
     "ALT_CONFIG": {
-        "FILE_PATHS": [],
-        "ENABLED": false
-    },
-    "SECONDARY": {
-        "FILE": "tUilKit_SECONDARY.json"
+        "ENABLED": true,
+        "FILE_PATHS": []
     },
     "LOG_FILES": {
         "DEBUG": "tUilKit_DEBUG.log",
