@@ -7,7 +7,7 @@
         "VERSION": "1.0.2",
         "MAIN_ENTRY_POINT": "src/tUilKit/__init__.py",
         "COLOUR_FSTR": "!project",
-        "LICENSE": "",
+        "LICENSE": "MIT",
         "BUILD_TYPE": "",
         "PROJECT_TYPE": "Core",
         "PROJECT_ROLE": "Foundational Substrate",
@@ -45,7 +45,7 @@
     },
     "ALT_CONFIG": {
         "ENABLED": true,
-        "FILE_PATHS": []
+        "FILE_PATHS": [".workspace/.projects_config/ALT_CONFIG.d/"]
     },
     "LOG_FILES": {
         "DEBUG": "tUilKit_DEBUG.log",

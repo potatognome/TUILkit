@@ -1,0 +1,4 @@
+menu_id: registry_overrides
+title: Registry Overrides
+description: Default registry overrides for menus
+overrides: {}

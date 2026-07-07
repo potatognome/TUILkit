@@ -1,256 +1,335 @@
-# CLI Menu Patterns for tUilKit Applications
+# PCMS‑2026: Prismata Compliant Menu System
+# Copilot Authoring Instructions - How Copilot must generate project.menus YAML files
 
-Purpose
-- Define the standard CLI menu framework used by V4l1d8r.
-- Keep menu behavior, layout, and interaction consistent across projects.
-- Make future menus validator-first: new menu work should follow current V4l1d8r patterns unless there is a clear exception.
+## Last Updated: 2026-07-06
 
-## Canonical Baseline (Validator-First)
+## Purpose
+Define the canonical CLI menu framework for all Prismata applications.
 
-Use V4l1d8r menu utilities as the baseline for future CLI menus:
-- Shared helpers: `src/V4l1d8r/menus/shared.py`
-- Selection menu: `src/V4l1d8r/menus/selection.py`
-- Validation menu: `src/V4l1d8r/menus/validation.py`
-- Repair menu: `src/V4l1d8r/menus/repair.py`
-- Configuration menu: `src/V4l1d8r/menus/configuration.py`
-- Settings menu: `src/V4l1d8r/menus/settings.py`
+Ensure consistent menu behavior, layout, interaction, and colour semantics across repositories.
 
-If a new menu is added in another project, copy these interaction rules and naming patterns first, then adapt content.
+Enforce schema‑driven menu definitions using YAML under project.menus/.
 
-## Required Interaction Patterns
+Ensure tUilKit configuration paths (notably colour‑key config) are validated and consistent.
 
-### 0) Colour Key Policy
+Prevent drift between projects, tools, and shared modules.
 
+
+## 1. General Rules
+- Copilot must treat each file in `config/project.menus/` as a **menu tree**, not a single menu.
+- A menu tree may contain:
+  - one or more menus
+  - one or more menu-items
+  - optional headers, subheaders, footers, subfooters
+  - optional registry overrides
+  - optional conditional visibility/enablement blocks
+- Copilot must never generate one file per menu unless explicitly instructed.
+- Copilot must group menus logically (e.g., main, project_selection, settings, edit_configuration, folder_paths).
+
+## 2. File Structure
+Every `config/project.menus/*.yaml` file must contain the following top-level keys:
+
+menus:
+  - <menu definitions>
+
+items:
+  - <menu-item definitions>
+
+registryOverrides:   # optional
+  <registry override blocks>
+
+The file must conform to the schemas in:
+`Prismata/Meta/canonical/menu.schemas/`
+
+## 3. Menu Definitions
+Each menu entry must include:
+- key (unique)
+- name
+- position (Main, Sub, Leaf)
+- order
+- type (menu type key)
+- colourScheme (pointer)
+- borderScheme (pointer)
+- optional parent
+- optional children
+- optional header
+- optional subheaders
+- optional footer
+- optional subfooter
+- optional visibilityMode, visibilityCondition, visibilityDependencies
+- optional enableMode, enableCondition, enableDependencies
+
+Copilot must ensure:
+- parent/child relationships are valid
+- order values are unique within the file
+- type corresponds to a known menu type
+
+## 4. Header/Subheader/Footer/Subfooter Blocks
+Copilot must generate these blocks using the definitions in `/Prismata/Meta/canonical/menu.schemas/header.schema.yaml`.
+
+Rules:
+- header appears at the top of the menu
+- subheaders appear below the header
+- footer appears at the bottom of the menu
+- subfooter appears above the footer
+- all support conditional visibility
+- all support colourScheme and borderScheme pointers
+- at least one blank row in between each header, subheader and footer
+
+## 5. Menu-Item Definitions
+Each item must include:
+- key
+- name
+- order
+- type (item type key)
+- selectionMethod
+- action (execute, navigate, back, exit, noop)
+- optional executeTarget or navigateTarget
+- optional visibilityMode, visibilityCondition, visibilityDependencies
+- optional enableMode, enableCondition, enableDependencies
+- optional colourScheme override
+
+Copilot must ensure:
+- item types match registry defaults
+- selectionMethod matches item type unless overridden
+- order values are unique within the menu
+
+## 6. Conditional Logic
+reference: `/Prismata/Meta/canonical/menu.schemas/menu-condition-language.schema.yaml`
+Copilot must generate conditions using the Menu Condition Language (MCL):
+
+Examples:
+visibilityCondition: "user_is_admin == true"
+visibilityCondition: "feature_flag('beta_mode') == true"
+enableCondition: "project_selected == true"
+
+Copilot must include visibilityDependencies or enableDependencies whenever conditions are used.
+
+## 7. Registry Overrides
+Copilot may generate registry overrides when:
+- a menu type needs custom defaults
+- a menu-item type needs custom behaviour
+- colourScheme or borderScheme needs tenant-specific changes
+
+Overrides must follow the structure in:
+`/Prismata/Meta/canonical/menu.schemas/menu-registry.schema.yaml`
+
+## 8. Best Practices
+- Group related menus into the same file (e.g., settings.yaml, admin.yaml).
+- Use meaningful keys (menu.settings.display, settings.volume).
+- Use consistent ordering (1, 2, 3…).
+- Always include a footer for hotkeys or status text.
+- Use subfooter for progress bars or secondary status.
+- Use colourScheme and borderScheme pointers, never inline ANSI.
+- Use menu types to reduce duplication.
+
+## 9. What Copilot Must Not Do
+- Must not create one file per menu unless explicitly asked.
+- Must not inline colour or border definitions.
+- Must not omit required fields.
+- Must not invent schemas.
+- Must not break parent/child relationships.
+- Must not generate invalid MCL expressions.
+
+## 10. Output Format
+When asked to create or modify `config/project.menus` files:
+- Copilot must output valid YAML.
+- Copilot must follow the canonical schemas exactly.
+- Copilot must include headers, footers, and registry overrides when appropriate.
+- Copilot must generate complete menu trees, not fragments.
+
+## 11. Canonical Baseline (Schema‑Driven Menus)
+All Prismata applications must load menus from:
+
+Code
+config/project.menus/*.yaml
+Menu logic must be implemented in:
+
+Code
+src/<project>/cli/menu.py          (loader + dispatcher)
+src/<project>/cli/menu_actions.py  (workflow functions)
+
+## 12. Required Interaction Patterns
+2.0 Colour Key Policy (tUilKit Configuration Required)
 Rules
-- Prefer semantic keys (`!data`, `!list`, `!text`, `!path`, `!done`, `!warn`, `!error`, etc.) for menu and table output.
-- Existing `!info` usage is tolerated for compatibility while migration is in progress.
-- Do not introduce new `!info` usage when an explicit semantic key is available.
-- For tabular/columnated output (especially PASS/WARN/FAIL screens), every displayed column should use explicit semantic keys.
-- Use `!reset` for neutral separators/blank lines when needed.
+Use semantic colour keys:
+!data, !list, !text, !path, !done, !warn, !error, !reset.
 
-### 1) Header Pattern
+Avoid new !info usage unless required for legacy compatibility.
 
-Always use `_display_header(...)` from shared helpers.
+All tabular output must use explicit semantic keys for each column.
 
-Current baseline behavior:
-- Main menu uses:
-    - `_display_header(ctx, menu_title="Main Menu", is_main_menu=True)`
-    - Two bordered sections are rendered: app header, then uppercase centered menu title.
-    - If any global auto-approval state is active, `[AUTO-YES ACTIVE]` appears in header content.
-- Submenus use:
-    - `_display_header(ctx, menu_title="Some Menu")`
-    - One bordered section: uppercase centered menu title.
-- A blank line is printed after each bordered header section.
+Colour‑key configuration must load from the path defined in:
 
-Guideline
-- Do not hardcode local border builders for menu titles.
-- Use shared header logic so all menus inherit future improvements automatically.
-- Keep title strings plain (for example, `"Settings"`); `_display_header` handles uppercase.
+Code
+config/project.menus/folder_paths.yaml → config.tuilkit_colour_keys
+Verification Requirement
+Every project must verify:
 
-### 2) Option Rendering Pattern
+tUilKit colour‑key config file exists
 
-Use `_print_options(ctx, [...])`.
+folder_paths.yaml points to the correct colour‑key file
 
-Why
-- Keeps number formatting and semantic color keys consistent.
-- Avoids one-off menu formatting drift.
+colour‑key loader uses the verified path
 
-Icon standard
-- Menu options should use `_print_options` icon mapping and a broader semantic palette.
-- Core defaults (must remain stable):
-    - Project / Select -> `📂`
-    - Validation / Check -> `✅`
-    - Repair -> `🏗️` or `🛠️`
-    - Settings -> `⚙️`
-    - Save -> `💾`
-    - Quit / Exit -> `🚪`
-    - Back -> `◀`
-- Extended mappings (recommended):
-    - Discover / Search / Scan -> `🔎` / `🔍`
-    - Compare / Diff -> `⚖️`
-    - Sync -> `🔄`
-    - Inject / Template -> `🧩`
-    - Config -> `🧰`
-    - Workspace -> `🧱`
-    - Copy -> `📄`
-    - Add / Create -> `➕`
-    - Remove / Delete -> `🗑️`
-    - Snippets -> `✂️`
-- If terminal encoding cannot render emoji, fallback ASCII tokens are acceptable.
+This prevents colour drift across repos.
 
-Menu ordering rules
-- Last option is always `Quit Application` on the Main Menu.
-- In submenus, last option is always `Back`.
-- In the current baseline, the main menu uses one wrapper item: `Settings and Configuration`.
+## 12.1 Header Pattern
+Always use _display_header(...) from shared helpers.
 
-### 3) Selection Pattern (Interactive Multi-Select)
-
-Primary multi-selection UX is the interactive picker, not comma-separated parsing.
-
-Baseline controls:
-- Up/Down arrows: move cursor
-- Space: toggle item
-- A: select all
-- C: clear all
-- Enter: confirm
-- Esc: cancel and restore prior selection
-
-Implementation baseline:
-- `msvcrt.getch()` for key reads (Windows)
-- `Canvas` for in-place redraws
-- `Cursor.hide()` / `Cursor.show()` for clean interaction
-
-### 4) Path Display Pattern
-
-All displayed filesystem paths should be colorized and relative when possible.
-
+Main Menu
+Code
+_display_header(ctx, menu_title="Main Menu", is_main_menu=True)
+Submenus
+Code
+_display_header(ctx, menu_title="Some Menu")
 Rules
-- Use `_cpath(ctx, path)` when logging paths.
-- In project lists, align path start position in a vertical column.
-- Compute label width first, then left-pad/right-pad labels before adding `| path`.
+Never hardcode borders or uppercase logic.
 
-Example (list alignment pattern):
+Titles must be plain strings; helper handles formatting.
 
-```python
-labels = [
-    (f"[{p.scope}] " if p.scope else "") + p.name + (" *" if p in ctx.selected_projects else "")
-    for p in ctx.projects
-]
-label_width = max((len(label) for label in labels), default=0)
+Blank line after header is mandatory.
 
-for idx, p in enumerate(ctx.projects, start=1):
-    label = labels[idx - 1]
-    ctx.logger.colour_log(
-        "!list", f"{idx:3}",
-        "!text", f" . {label:<{label_width}}",
-        "!path", f"  |  {_cpath(ctx, p.project_root)}",
-        log_files=list(ctx.log_files.values()),
-        time_stamp=True,
-    )
-```
+## 12.2 Option Rendering Pattern
+Use _print_options(ctx, [...]).
 
-### 5) Menu Flow Pattern
+Icon Standard
+Core stable icons:
 
-Recommended loop template:
+Meaning	Icon
+Project / Select	📂
+Validation / Check	✅
+Repair	🛠️ / 🏗️
+Settings	⚙️
+Save	💾
+Quit	🚪
+Back	◀
 
-```python
-def _my_menu(ctx: AppContext) -> None:
-    while True:
-        _display_header(ctx, menu_title="My Menu")
-        _print_options(ctx, [
-            "1 . First action",
-            "2 . Second action",
-            "0 . Back",
-        ])
-        choice = _prompt()
 
-        if choice == "0":
-            return
-        elif choice == "1":
-            ...
-            _pause(ctx)
-        elif choice == "2":
-            ...
-            _pause(ctx)
-        else:
-            ctx.logger.colour_log(
-                "!warn", "[!] Unknown option.",
-                log_files=list(ctx.log_files.values()),
-                time_stamp=True,
-            )
-            _pause(ctx)
-```
+Extended recommended icons:
 
-### 6) Validator Main Menu Baseline
+🔎 🔍 ⚖️ 🔄 🧩 🧰 🧱 📄 ➕ 🗑️ ✂️
 
-For V4l1d8r, the main menu order is canonical:
+ASCII fallback allowed.
 
-1. `Project Selection`
-2. `Validation, Scanning and Comparison`
-3. `Sync, Repair and Fix`
-4. `Settings and Configuration`
-0. `Quit Application`
+Ordering Rules
+Main menu last item: Quit Application
 
-`Snippet management` and destructive/automation toggles belong under `Settings`, not the main menu.
+Submenu last item: Back
 
-### 6.1) Settings + Configuration Wrapper Pattern
+Settings + Configuration must be a single wrapper entry.
 
-Current V4 baseline uses a dedicated wrapper submenu for these concerns:
+## 12.3 Selection Pattern (Interactive Multi‑Select)
+Primary multi‑select UX is the interactive picker:
 
-1. `Configuration`
-2. `Settings`
-0. `Back`
+Up/Down: move
 
-Guideline
-- Keep the wrapper submenu as the single main-menu entry point when both settings and configuration flows exist.
-- Do not duplicate settings toggles on the main menu.
+Space: toggle
 
-### 7) Global Settings Safety Pattern
+A: select all
 
-Settings menu should include global toggles:
-- `Toggle Recursive Folder Search: {ON, OFF}`
-- `Toggle YES TO ALL QUERIES: {ON, OFF}`
-- `Toggle Add Missing Config Keys: {AUTO-NO, ASK, AUTO-YES}`
-- `Toggle Remove Config Keys: {AUTO-NO, ASK, AUTO-YES}`
-- `Toggle Remove Section Keys (inject): {AUTO-NO, ASK, AUTO-YES}`
-- `Toggle Create Backups Before Write: {ON, OFF}`
-- `Snippet management`
-- `Open interactive toggle table editor`
+C: clear all
 
-Synchronization rule
-- Enabling `YES TO ALL QUERIES` must set all three tri-state policy modes to `AUTO-YES`.
-- Cycling any tri-state mode should re-sync the global YES/NO state.
+Enter: confirm
 
-Safety rule:
-- When leaving Settings, if any tri-state policy mode is `AUTO-YES`, show a warning and require confirmation before returning to main menu.
+Esc: cancel
 
-## Migration Rules for Future CLI Menus
+Implementation baseline uses:
 
-When modernizing older menus, apply this order:
-1. Replace ad-hoc border/header code with shared `_display_header`.
-2. Replace custom numbered output with `_print_options`.
-3. Replace comma-separated multi-select input with interactive picker.
-4. Switch path rendering to `_cpath` and align paths in a vertical column.
-5. Keep confirmation prompts routed through `_confirm` where available.
-6. For policy-driven prompts, route through `_confirm_with_mode` when settings support AUTO-NO/ASK/AUTO-YES.
-7. Use the `Settings and Configuration` wrapper pattern when both settings and configuration menus exist.
-8. Ensure main/submenu title rendering follows `_display_header(..., menu_title=...)` rules.
+msvcrt.getch()
 
-## tUilKit CLI Module Alignment Note
+Canvas redraw
 
-Legacy utility module:
-- `Core/tUilKit/src/tUilKit/utils/cli_menus.py`
+Cursor.hide() / Cursor.show()
 
-When modernizing or creating new menus in tUilKit modules:
-- Prefer V4l1d8r shared menu helpers/patterns over ad-hoc direct input loops.
-- Keep icon semantics aligned to this document.
-- Prefer centralized settings behavior and safety prompts over per-menu custom logic.
+## 12.4 Path Display Pattern
+All filesystem paths must be:
 
-## Non-Goals / Avoid
+colourized via _cpath(ctx, path)
 
-- Do not add per-menu header-width constants unless required by terminal constraints.
-- Do not duplicate selection-list rendering in multiple places; use one helper.
-- Do not mix absolute and relative path output styles within the same menu.
-- Do not introduce new multi-select conventions that conflict with the interactive picker.
+aligned in a vertical column
 
-## Quick Checklist (Before Merging Menu Changes)
+relative when possible
 
-- Uses `_display_header` and `_print_options`.
-- Uses `menu_title` / `is_main_menu` pattern (no legacy `subtitle` argument).
-- Multi-select uses arrow/space interactive picker.
-- Paths use `_cpath` and line up in a fixed visual column.
-- Tabular output uses semantic keys for every column.
-- Icons follow the expanded semantic mapping in this doc with fallback support.
-- Main menu includes `Settings and Configuration` as a single wrapper entry.
-- Settings exit warning appears when AUTO-YES modes are active.
-- Unknown-option handling is present.
-- Tests pass.
+## 13. Migration Rules for Modernizing Older Menus
+Apply in this order:
+
+Replace custom headers with _display_header.
+
+Replace custom option rendering with _print_options.
+
+Replace comma‑separated multi‑select with interactive picker.
+
+Replace path rendering with _cpath.
+
+Route confirmations through _confirm or _confirm_with_mode.
+
+Use Settings + Configuration wrapper pattern.
+
+Ensure title rendering follows _display_header(menu_title=...).
+
+## 14. tUilKit CLI Module Alignment
+Legacy module:
+`/Prismata/Projects/Core/tUilKit/src/tUilKit/utils/cli_menus.py`
+
+Rules:
+
+Prefer interface helpers `/Prismata/Projects/Tooling` over ad‑hoc loops.
+
+Keep icon semantics aligned with PCMS‑2026.
+
+Use centralized settings + safety prompts.
+
+Verify colour‑key config path before rendering.
+
+## 15. Non‑Goals / Avoid
+No custom header width constants.
+
+No duplicated selection‑list rendering.
+
+No mixing absolute/relative paths in the same menu.
+
+No new multi‑select conventions.
+
+No hardcoded menu definitions in Python.
+
+No colour‑key usage outside semantic keys.
+
+## 16. Quick Checklist (Before Merging Menu Changes)
+Uses _display_header and _print_options.
+
+Uses correct main/submenu title pattern.
+
+Multi‑select uses interactive picker.
+
+Paths use _cpath and aligned columns.
+
+Tabular output uses semantic colour keys.
+
+Icons follow expanded semantic mapping.
+
+Main menu includes Settings + Configuration wrapper.
+
+Settings exit warning appears when AUTO‑YES is active.
+
+Unknown‑option handling present.
+
+Colour‑key config path validated.
+
+Menu YAML → menu_actions linkage verified.
+
+Tests pass.
 
 ## References
+Tooling shared helpers:
+`/Prismata/Projects/Tooling/utilities/interface_primitives/menu_helpers.py`
+`/Prismata/Projects/Tooling/utilities/interface_primitives/vile.py`
+`/Prismata/Projects/Tooling/utilities/interface_primitives/border_patterns.py`
 
-- V4l1d8r shared menu helpers: `Core/V4l1d8r/src/V4l1d8r/menus/shared.py`
-- V4l1d8r selection menu: `Core/V4l1d8r/src/V4l1d8r/menus/selection.py`
-- Colour key usage: `.github/copilot-instructions.d/colour_key_usage.md`
+V4l1d8r selection menu: 
+`Core/V4l1d8r/src/V4l1d8r/menus/selection.py`
 
----
-Last updated: 2026-05-27
+Colour key usage: `.github/copilot-instructions.d/colour_key_usage.md`
+Prismata menu YAML directory: `/config/project.menus/`
+Prismata menu loader: menu.py
+Prismata action dispatcher: menu_actions.py

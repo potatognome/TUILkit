@@ -11,6 +11,7 @@ tUilKit uses **semantic colour codes** (e.g., `!data`, `!error`) instead of lite
 - **Consistency**: Same meaning = same colour across all apps
 - **Readability**: Codes describe intent, not appearance
 - **Flexibility**: Can change colour schemes without changing code
+- **Efficiency**: Can change foreground and background colour and styling with a single key.
 - **Accessibility**: Can adapt for colour-blind users or high-contrast themes
 
 ## Primary Colour Codes (COLOUR_KEY)

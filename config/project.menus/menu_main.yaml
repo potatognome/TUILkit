@@ -1,0 +1,12 @@
+menu_id: main
+title: Example Main Menu
+items:
+  - key: 1
+    label: Create Item
+    action: noop
+  - key: 2
+    label: List Items
+    action: noop
+  - key: q
+    label: Quit
+    action: quit

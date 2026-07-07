@@ -14,6 +14,14 @@ All notable changes to this project are documented in this file.
 ### Changed
 - Improved consistency of shared CLI menu behavior across tenant and infrastructure apps using the common menu engine.
 
+## 0.6.2 - 2026-07-06
+
+### Changed
+- Menu loader discovery now prefers `config/project.menus` for projects migrated under PCMS-2026.
+
+### Fixed
+- Ensure plain-text renderer displays `icon` before `label` when `tUilKit` is unavailable.
+
 ## 0.6.0 - 2026-05-06
 
 ### Added

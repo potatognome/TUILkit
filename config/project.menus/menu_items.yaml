@@ -1,0 +1,6 @@
+menu_id: menu_items
+title: Menu Items
+items:
+  - key: 1
+    label: No-op action
+    action: noop

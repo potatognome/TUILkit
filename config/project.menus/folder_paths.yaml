@@ -1,0 +1,4 @@
+menus: project.menus
+# Path to tUilKit colour-key config (relative to project root)
+# Canonical shared colour key
+tuilkit_colour_key: ../../../.workspace/.projects_config/GLOBAL_SHARED.d/COLOURS.json
