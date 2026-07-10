@@ -131,8 +131,26 @@ class ConfigLoader(ConfigLoaderInterface):
     def load_config(self, json_file_path: str) -> dict:
         if getattr(self, 'verbose', False):
             print(f"[ConfigLoader VERBOSE] Opening config file: {json_file_path}")
-        with open(json_file_path, 'r', encoding='utf-8-sig') as f:
-            return json.load(f)
+        import re
+        try:
+            with open(json_file_path, 'r', encoding='utf-8-sig') as f:
+                text = f.read()
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError:
+                # Attempt to sanitize common trailing-comma mistakes in hand-edited JSON
+                sanitized = re.sub(r',\s*([\]}])', r'\1', text)
+                try:
+                    return json.loads(sanitized)
+                except json.JSONDecodeError:
+                    if getattr(self, 'verbose', False):
+                        print(f"[ConfigLoader VERBOSE] Failed to parse JSON even after sanitizing: {json_file_path}")
+                    # Return empty dict to let callers handle defaults/fallbacks
+                    return {}
+        except FileNotFoundError:
+            if getattr(self, 'verbose', False):
+                print(f"[ConfigLoader VERBOSE] Config file not found: {json_file_path}")
+            return {}
 
     def ensure_folders_exist(self, file_system: FileSystemInterface):
         log_files = self.global_config.get("LOG_FILES", {})
@@ -236,7 +254,12 @@ class ConfigLoader(ConfigLoaderInterface):
         colour_config_path = self.get_config_file_path("COLOURS")
         if getattr(self, 'verbose', False):
             print(f"[ConfigLoader VERBOSE] Loading COLOURS config from: {colour_config_path}")
-        return self.load_config(colour_config_path)
+        try:
+            return self.load_config(colour_config_path) or {}
+        except Exception:
+            if getattr(self, 'verbose', False):
+                print("[ConfigLoader VERBOSE] Failed to load colour config, returning empty dict")
+            return {}
 
     def load_border_patterns_config(self) -> dict:
         try:
@@ -285,7 +308,7 @@ class ConfigLoader(ConfigLoaderInterface):
             else:
                 if getattr(self, 'verbose', False):
                     print("NOT FOUND.. SKIPPING")
-        fallback_abs = os.path.abspath(os.path.join(os.getcwd(), "Dev", "tUilKit", "config", file))
+        fallback_abs = os.path.abspath(os.path.join(os.getcwd(), ".workspace", "tUilKit", "config", file))
         if getattr(self, 'verbose', False):
             print(f"[ConfigLoader VERBOSE] Checking fallback bootstrap config path: {fallback_abs} ...", end=" ")
         if os.path.exists(fallback_abs):

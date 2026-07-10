@@ -9,6 +9,8 @@ from tUilKit.dict.DICT_CODES import ESCAPES, COMMANDS
 from tUilKit.interfaces.logger_interface import LoggerInterface
 from tUilKit.interfaces.colour_interface import ColourInterface
 from tUilKit.utils.config import ConfigLoader
+from pathlib import Path
+import json
 import copy
 
 # ANSI ESCAPE CODE PREFIXES for colour coding f-strings
@@ -73,7 +75,64 @@ class ColourManager(ColourInterface):
     def __init__(self, colour_config: dict):
         self.ANSI_FG_COLOUR_SET = {}
         self.ANSI_BG_COLOUR_SET = {}
-        for key, value in colour_config['COLOUR_KEY'].items():
+        # Support both modern 'COLOUR_KEY' format and legacy 'COLOURS' format.
+        entries = {}
+        if isinstance(colour_config, dict) and colour_config:
+            if 'COLOUR_KEY' in colour_config:
+                entries = colour_config.get('COLOUR_KEY') or {}
+            elif 'COLOURS' in colour_config:
+                # Legacy format: { "COLOURS": { key: {"fg": "white", "bg": "black"}, ... } }
+                for k, v in colour_config.get('COLOURS', {}).items():
+                    if isinstance(v, dict):
+                        fg = v.get('fg', '') or ''
+                        bg = v.get('bg', '') or ''
+                        fg = fg.upper() if isinstance(fg, str) else str(fg).upper()
+                        bg = bg.upper() if isinstance(bg, str) else str(bg).upper()
+                        if fg and bg:
+                            entries[k] = f"{fg}|{bg}"
+                        elif fg:
+                            entries[k] = fg
+                        elif bg:
+                            entries[k] = bg
+                        else:
+                            entries[k] = ''
+                    else:
+                        entries[k] = str(v).upper()
+
+        # If no entries were provided, attempt to load the package COLOURS.json as a fallback
+        if not entries:
+            try:
+                # tUilKit package layout: tUilKit/utils/output.py -> ../config/COLOURS.json
+                pkg_root = Path(__file__).resolve().parents[2]
+                colours_path = pkg_root / "config" / "COLOURS.json"
+                if colours_path.is_file():
+                    with colours_path.open("r", encoding="utf-8") as fh:
+                        data = json.load(fh) or {}
+                    if isinstance(data, dict) and 'COLOUR_KEY' in data:
+                        entries = data.get('COLOUR_KEY') or {}
+                    elif isinstance(data, dict) and 'COLOURS' in data:
+                        for k, v in data.get('COLOURS', {}).items():
+                            if isinstance(v, dict):
+                                fg = v.get('fg', '') or ''
+                                bg = v.get('bg', '') or ''
+                                fg = fg.upper() if isinstance(fg, str) else str(fg).upper()
+                                bg = bg.upper() if isinstance(bg, str) else str(bg).upper()
+                                if fg and bg:
+                                    entries[k] = f"{fg}|{bg}"
+                                elif fg:
+                                    entries[k] = fg
+                                elif bg:
+                                    entries[k] = bg
+                                else:
+                                    entries[k] = ''
+                            else:
+                                entries[k] = str(v).upper()
+            except Exception:
+                entries = {}
+
+        for key, value in entries.items():
+            if not isinstance(value, str):
+                value = str(value)
             if '|' in value:
                 fg, bg = value.split('|', 1)
             else:
@@ -88,7 +147,31 @@ class ColourManager(ColourInterface):
                 self.ANSI_FG_COLOUR_SET[key] = f"\033[38;2;{RGB[fg]}"
             if bg in RGB:
                 self.ANSI_BG_COLOUR_SET[key] = f"\033[48;2;{RGB[bg]}"
+        # Ensure RESET is always available
         self.ANSI_FG_COLOUR_SET['RESET'] = ANSI_RESET
+
+        # Provide sensible defaults for commonly used colour keys when missing
+        default_keys = {
+            '!date': 'YELLOW',
+            '!time': 'MAGENTA',
+            '!proc': 'BLUE',
+            '!data': 'CYAN',
+            '!path': 'PURPLE',
+            '!file': 'GREEN',
+            '!info': 'WHITE',
+            '!warn': 'YELLOW',
+            '!error': 'RED',
+            '!done': 'GREEN',
+            '!debug': 'MAGENTA',
+            '!list': 'CYAN'
+        }
+        for k, vk in default_keys.items():
+            if k not in self.ANSI_FG_COLOUR_SET and vk in RGB:
+                self.ANSI_FG_COLOUR_SET[k] = f"\033[38;2;{RGB[vk]}"
+            if k not in self.ANSI_BG_COLOUR_SET:
+                # default background to BLACK for visibility
+                if 'BLACK' in RGB:
+                    self.ANSI_BG_COLOUR_SET[k] = f"\033[48;2;{RGB['BLACK']}"
 
     def get_fg_colour(self, colour_code: str) -> str:
         # Check if it's a config key first (e.g., !info, !proc)
@@ -376,6 +459,47 @@ class Logger(LoggerInterface):
 
     def log_done(self, log_files = None, end: str = "\n", log_to: str = "both", time_stamp=True):
         self.colour_log("!done", "Done!", category="default", log_files=log_files, end=end, log_to=log_to, time_stamp=time_stamp)
+
+    # Compatibility wrappers for conventional logger API
+    def info(self, message: str, *args, **kwargs):
+        try:
+            msg = message % args if args else str(message)
+        except Exception:
+            msg = str(message)
+        self.colour_log("!info", msg, category="default", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+
+    def error(self, message: str, *args, **kwargs):
+        try:
+            msg = message % args if args else str(message)
+        except Exception:
+            msg = str(message)
+        self.colour_log("!error", msg, category="error", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+
+    def warning(self, message: str, *args, **kwargs):
+        try:
+            msg = message % args if args else str(message)
+        except Exception:
+            msg = str(message)
+        self.colour_log("!warn", msg, category="default", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+
+    def debug(self, message: str, *args, **kwargs):
+        try:
+            msg = message % args if args else str(message)
+        except Exception:
+            msg = str(message)
+        self.colour_log("!debug", msg, category="default", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+
+    def exception(self, message: str, *args, exc: Exception = None, **kwargs):
+        """Log an exception; if exc provided, include exception details using `log_exception`."""
+        try:
+            msg = message % args if args else str(message)
+        except Exception:
+            msg = str(message)
+        if exc is not None:
+            self.log_exception(msg, exc, category=kwargs.get("category", "error"), log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+        else:
+            # Fallback to error-style logging
+            self.colour_log("!error", msg, category=kwargs.get("category", "error"), log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
 
     def log_column_list(self, df, filename, log_files=None, log_to: str = "both"):
         self.colour_log(

@@ -62,8 +62,8 @@ class ConfigPathResolver:
                 if verbose:
                     print("Found!")
                 return str(parent_config)
-        # Absolute fallback
-        fallback_abs = os.path.abspath(os.path.join(os.getcwd(), "Dev", "tUilKit", "config", file_name))
+        # Absolute fallback (legacy Dev -> use .workspace for Prismata)
+        fallback_abs = os.path.abspath(os.path.join(os.getcwd(), ".workspace", "tUilKit", "config", file_name))
         if verbose:
             print("Not found.\n")
             print(f"[ConfigPathResolver VERBOSE] Checking absolute fallback: {fallback_abs}", end="...")
@@ -86,7 +86,7 @@ class ConfigPathResolver:
         cwd_path = os.path.abspath(os.path.join(os.getcwd(), shared_folder, shared_path))
         if os.path.exists(cwd_path):
             return cwd_path
-        dev_shared_path = os.path.abspath(os.path.join(os.getcwd(), "Dev", "tUilKit", shared_folder, shared_path))
+        dev_shared_path = os.path.abspath(os.path.join(os.getcwd(), ".workspace", "tUilKit", shared_folder, shared_path))
         if os.path.exists(dev_shared_path):
             return dev_shared_path
         return None

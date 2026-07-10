@@ -8,7 +8,6 @@ Encapsulates setup logic and provides convenient one-liner instantiation.
 
 import os
 
-
 _config_loader = None
 _colour_manager = None
 _logger = None
@@ -22,48 +21,6 @@ def get_config_loader():
         _config_loader = ConfigLoader()
     return _config_loader
 
-
-def get_colour_manager():
-    global _colour_manager
-    if _colour_manager is None:
-        from tUilKit.utils.output import ColourManager
-        _colour_manager = ColourManager(get_config_loader().load_colour_config())
-    return _colour_manager
-
-
-def get_logger():
-    global _logger
-    if _logger is None:
-        from tUilKit.utils.output import Logger
-        _logger = Logger(get_colour_manager())
-    return _logger
-
-
-def get_file_system():
-    global _file_system
-    if _file_system is None:
-        from tUilKit.utils.fs import FileSystem
-        _file_system = FileSystem(logger=get_logger())
-    return _file_system
-
-
-def get_cli_menu_handler():
-    global _cli_menu_handler
-    if _cli_menu_handler is None:
-        from tUilKit.utils.cli_menus import CLIMenuHandler
-        _cli_menu_handler = CLIMenuHandler(logger=get_logger())
-    return _cli_menu_handler
-
-
-def reset_factories():
-    global _config_loader, _colour_manager, _logger, _file_system, _cli_menu_handler
-    _config_loader = None
-    _colour_manager = None
-    _logger = None
-    _file_system = None
-    _cli_menu_handler = None
-
-
 def get_colour_manager():
     """
     Get or create the singleton ColourManager instance.
@@ -75,11 +32,11 @@ def get_colour_manager():
         _colour_manager = ColourManager(get_config_loader().load_colour_config())
     return _colour_manager
 
-
-def get_logger():
+def get_logger(*args, **kwargs):
     """
     Get or create the singleton Logger instance.
-    Fully initialized with ColourManager and log file paths from config.
+    Accepts optional positional/keyword arguments (e.g., a logger name)
+    for compatibility with callers that pass `__name__`.
     """
     global _logger
     if _logger is None:

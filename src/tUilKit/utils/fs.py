@@ -39,7 +39,7 @@ class FileSystem(FileSystemInterface):
                 else:
                     resolved_log_files[key] = log_files_dict[key]
         elif log_root_mode == "project":
-            project_root = os.path.abspath(os.path.join(os.getcwd(), "Dev", "tUilKit"))
+            project_root = os.path.abspath(os.path.join(os.getcwd(), ".workspace", "tUilKit"))
             for key in log_files_dict:
                 if not os.path.isabs(log_files_dict[key]):
                     resolved_log_files[key] = os.path.join(project_root, log_files_dict[key])

@@ -109,11 +109,41 @@ class CLIMenuHandler(CLIMenuInterface):
         self.log_files = self.config.get("LOG_FILES", {})
         roots = self.config.get("ROOTS", {}) if isinstance(self.config.get("ROOTS", {}), dict) else {}
         self.workspace_root = Path(str(roots.get("WORKSPACE", Path.cwd()))).resolve()
-        self.menu_root = self.workspace_root / "projects.menus"
+        canonical_menu_root = self.workspace_root / "config" / "project.menus"
+        legacy_menu_root = self.workspace_root / "projects.menus"
+        if canonical_menu_root.exists():
+            self.menu_root = canonical_menu_root
+        else:
+            self.menu_root = legacy_menu_root
         self.menu_registry: Dict[str, Dict[str, Any]] = {
             "menu_types": {},
             "menu_items": {},
         }
+
+    def _resolve_tenant_root(self, tenant: str) -> Path:
+        """Resolve where tenant menu files live.
+
+        Supports both:
+        - `<menu_root>/<tenant>/...` (legacy tenant folder layout)
+        - `<menu_root>/...` (canonical flat project.menus layout)
+        """
+        tenant_root = self.menu_root / tenant
+        if tenant_root.exists() and tenant_root.is_dir():
+            return tenant_root
+        return self.menu_root
+
+    def _load_menu_payload(self, root: Path, name: str) -> Dict[str, Any]:
+        """Load a menu payload supporting dash/underscore naming variants."""
+        candidates = [
+            root / f"{name}.yaml",
+            root / f"{name.replace('_', '-')}.yaml",
+            root / f"{name.replace('-', '_')}.yaml",
+        ]
+        for path in candidates:
+            data = self._load_yaml_file(path)
+            if data:
+                return data
+        return {}
 
     def _load_yaml_file(self, path: Path) -> Dict[str, Any]:
         if not path.exists():
@@ -197,11 +227,11 @@ class CLIMenuHandler(CLIMenuInterface):
         )
 
     def load_menu_tree(self, tenant: str) -> Dict[str, Any]:
-        tenant_root = self.menu_root / tenant
-        menu_tree = self._load_yaml_file(tenant_root / "menu-tree.yaml")
-        menu_items = self._load_yaml_file(tenant_root / "menu-items.yaml")
-        overrides = self._load_yaml_file(tenant_root / "registry-overrides.yaml")
-        conditions = self._load_yaml_file(tenant_root / "conditions.yaml")
+        tenant_root = self._resolve_tenant_root(tenant)
+        menu_tree = self._load_menu_payload(tenant_root, "menu_tree")
+        menu_items = self._load_menu_payload(tenant_root, "menu_items")
+        overrides = self._load_menu_payload(tenant_root, "registry-overrides")
+        conditions = self._load_menu_payload(tenant_root, "conditions")
 
         self.menu_registry["menu_types"][tenant] = overrides.get("menu_types", {})
         self.menu_registry["menu_items"][tenant] = menu_items.get("items", {})
@@ -230,8 +260,30 @@ class CLIMenuHandler(CLIMenuInterface):
         menus = tree.get("menus", []) if isinstance(tree.get("menus", []), list) else []
         menu = next((m for m in menus if str(m.get("key", "")) == menu_key), None)
         if not menu:
-            self.logger.colour_log("!error", f"❌ Menu '{menu_key}' not found for tenant '{tenant}'")
-            return None
+            # Compatibility aliases across older tenant DSL variants.
+            aliases = {
+                "selection": "project_selection",
+                "project_selection": "selection",
+            }
+            alt_key = aliases.get(menu_key)
+            if alt_key:
+                menu = next((m for m in menus if str(m.get("key", "")) == alt_key), None)
+        if not menu:
+            # Fallback: try direct flat menu file (e.g. selection.yaml) from the
+            # resolved menu root when menu-tree lacks the requested key.
+            tenant_root = self._resolve_tenant_root(tenant)
+            flat = self._load_menu_payload(tenant_root, menu_key)
+            flat_items = flat.get("items", []) if isinstance(flat.get("items", []), list) else []
+            if not flat_items:
+                # Silent miss: callers can provide their own fallback UI.
+                return None
+            return self.render_menu_object_model(
+                title=str(flat.get("title", menu_key)).strip() or "Menu",
+                items=flat_items,
+                context=conditions,
+                is_main_menu=bool(flat.get("is_main_menu", False)),
+                auto_mode=auto_mode or bool(conditions.get("auto_mode", False)),
+            )
 
         items = []
         for key in menu.get("items", []):

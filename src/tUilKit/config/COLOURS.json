@@ -44,24 +44,6 @@
         "!info"          : "For general text output",
         "!reset"         : "Used automatically after colour_str and colour_log to reset terminal foreground and background text colour to defaults",
 
-        "ARGS"          : "DEPRECATED - replace with !args",
-        "COMMAND"       : "DEPRECATED - replace with !cmd",
-        "CMD"           : "DEPRECATED - replace with !cmd",
-        "PROC"          : "DEPRECATED - replace with !proc",
-        "DONE"          : "DEPRECATED - replace with !done",
-        "ERROR"         : "DEPRECATED - replace with !error",
-        "OUTPUT"        : "DEPRECATED - replace with !output",
-        "CALC"          : "DEPRECATED - replace with !calc",
-        "DATA"          : "DEPRECATED - replace with !data",
-        "PATH"          : "DEPRECATED - replace with !path",
-        "FILE"          : "DEPRECATED - replace with !file",
-        "FILE_EXT"      : "DEPRECATED - replace with !file_ext",
-        "DATE"          : "DEPRECATED - replace with !date",
-        "TIME"          : "DEPRECATED - replace with !time",
-        "INFO"          : "DEPRECATED - replace with !info",
-        "LOAD"          : "DEPRECATED - replace with !load",
-        "SAVE"          : "DEPRECATED - replace with !save",
-        "RESET"         : "DEPRECATED - replace with !reset"
     },
 
     "COLOUR_KEY"        : {
