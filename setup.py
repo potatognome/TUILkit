@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="tUilKit",  # Make sure this name is unique on PyPI
     author="Daniel Austin",
-    version="0.5.0",
+    version="0.6.3",
     author_email="the.potato.gnome@gmail.com",
     description="A toolkit with utility functions for colour coding text output in a terminal.",
     long_description=open("README.md").read(),

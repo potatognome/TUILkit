@@ -1,6 +1,6 @@
 id: prismata.core.tUilKit
 name: tUilKit
-version: 0.1.0
+version: 0.6.3
 description: 'Shared utility foundation for configuration loading, logging, CLI flows,
   terminal rendering, and filesystem helpers across the Prismata ecosystem.
 

@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.3 - 2026-07-17
+
+### Added
+- Introduced AI release-governance assets for contributors: `.github/ai-quality-checklist.md`, `.github/ai-prompt-wrapper.md`, `.github/pull_request_template.md`, and `scripts/ai_quality_gate.py`.
+
+### Changed
+- Standardized AI-assisted contribution workflow in `.github/copilot-instructions.md` and `README.md` with explicit quality-gate guidance.
+- Synchronized project version references across release metadata files.
+
 ## 0.6.1 - 2026-06-08
 
 ### Added

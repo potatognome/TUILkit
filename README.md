@@ -3,7 +3,15 @@ tUilKit
 # Project Name
 tUilKit
 
-**Current version: 0.6.1**
+**Current version: 0.6.3**
+
+## Recent Enhancements (v0.6.3)
+
+- **AI contribution workflow baseline**:
+    - Added `.github/ai-quality-checklist.md` for AI task completion criteria.
+    - Added `.github/ai-prompt-wrapper.md` with reusable request variants.
+    - Added `.github/pull_request_template.md` to capture contract, test, and docs/version evidence.
+    - Added `scripts/ai_quality_gate.py` for a lightweight manual pre-merge quality gate.
 
 ## Recent Enhancements (v0.6.1)
 
