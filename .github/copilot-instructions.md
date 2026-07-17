@@ -6,6 +6,9 @@ This file is minimal by design. All general rules, agent edit policies, and cent
 
 Refer to:
 - [Modular copilot-instructions](./copilot-instructions.d/*.md) for extensions to the general rules in this file.
+- [AI Quality Checklist](./ai-quality-checklist.md) for day-to-day task completion criteria.
+- [AI Prompt Wrapper](./ai-prompt-wrapper.md) for reusable high-consistency request templates.
+- [PR Template](./pull_request_template.md) for required implementation evidence.
 
 ## Shared Policies Propagated from dev_local/.github
 - Treat this repository as its own root. Do not depend on parent dev_local paths existing on another machine.
@@ -67,6 +70,14 @@ For any agent edits, follow workspace and umbrella rules unless a project-specif
 - Prefer config-driven customization.
 - Ensure all tests pass before publishing.
 - Maintain clear, concise documentation.
+
+## AI Task Definition of Done
+- Treat `ai-quality-checklist.md` as the default completion gate for AI-assisted tasks.
+- Require contract impact notes for changes that can affect consumers.
+- Require focused test evidence for changed behavior.
+- Require docs and changelog updates when behavior changes.
+- Use `ai-prompt-wrapper.md` when starting feature, bugfix, or refactor requests to improve consistency.
+- Run `python scripts/ai_quality_gate.py` before final handoff and include noteworthy warnings/failures in the summary.
 
 ---
 

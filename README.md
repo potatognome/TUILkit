@@ -191,6 +191,26 @@ Sample usage and tests can be found in the `/tests` folder.
 ## Contributing
 If you would like to contribute, please fork the repository and use a feature branch. Pull requests are warmly welcome.
 
+### AI-Assisted Development
+
+For consistent, policy-compliant AI changes in this repository, use:
+- `.github/ai-quality-checklist.md` as the task completion checklist.
+- `.github/ai-prompt-wrapper.md` as reusable prompt templates for features, bugfixes, and refactors.
+- `.github/copilot-instructions.md` and `.github/copilot-instructions.d/*.md` as the authoritative behavior and style rules.
+- `.github/pull_request_template.md` to capture required PR evidence.
+
+Manual quality gate:
+
+```bash
+python scripts/ai_quality_gate.py
+```
+
+Strict mode (warnings fail the run):
+
+```bash
+python scripts/ai_quality_gate.py --strict
+```
+
 We’re actively seeking contributors to help enhance tUilKit! Whether you’re passionate about terminal functionality, advanced data operations, or document creation, there’s plenty of room to leave your mark.
 
 ### Areas for Contribution
