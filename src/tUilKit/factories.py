@@ -7,6 +7,7 @@ Encapsulates setup logic and provides convenient one-liner instantiation.
 """
 
 import os
+import json
 
 _config_loader = None
 _colour_manager = None
@@ -29,7 +30,39 @@ def get_colour_manager():
     global _colour_manager
     if _colour_manager is None:
         from tUilKit.utils.output import ColourManager
-        _colour_manager = ColourManager(get_config_loader().load_colour_config())
+        # Allow optional override via merged config key 'colourKeyPath'
+        config_loader = get_config_loader()
+        colour_config = None
+        try:
+            global_cfg = getattr(config_loader, 'global_config', {}) or {}
+            colour_override = global_cfg.get('colourKeyPath') if isinstance(global_cfg, dict) else None
+        except Exception:
+            colour_override = None
+
+        if colour_override:
+            try:
+                # Absolute path
+                if os.path.isabs(colour_override) and os.path.exists(colour_override):
+                    with open(colour_override, 'r', encoding='utf-8') as fh:
+                        colour_config = json.load(fh)
+                else:
+                    # Try resolving via ConfigLoader helpers
+                    try:
+                        resolved = config_loader.get_json_path(colour_override)
+                        colour_config = config_loader.load_config(resolved)
+                    except Exception:
+                        # Fallback to relative path from cwd
+                        rel = os.path.join(os.getcwd(), colour_override)
+                        if os.path.exists(rel):
+                            with open(rel, 'r', encoding='utf-8') as fh:
+                                colour_config = json.load(fh)
+            except Exception:
+                colour_config = None
+
+        if not colour_config:
+            colour_config = config_loader.load_colour_config()
+
+        _colour_manager = ColourManager(colour_config)
     return _colour_manager
 
 def get_logger(*args, **kwargs):
