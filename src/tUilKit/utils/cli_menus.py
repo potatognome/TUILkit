@@ -350,9 +350,11 @@ class CLIMenuHandler(CLIMenuInterface):
         choice = input("\nSelect option: ").strip()
         choice_lower = choice.lower()
 
-        # Invisible reserved quit alias.
+        # Invisible reserved quit/back aliases.
         if choice_lower in {"q", "quit"}:
             return "quit"
+        if choice_lower in {"back", "cancel"}:
+            return choice_lower
 
         return index_map.get(choice_lower) or index_map.get(choice)
     

@@ -266,7 +266,38 @@ class ConfigLoader(ConfigLoaderInterface):
             border_patterns_path = self.get_config_file_path("BORDER_PATTERNS")
             if getattr(self, 'verbose', False):
                 print(f"[ConfigLoader VERBOSE] Loading BORDER_PATTERNS config from: {border_patterns_path}")
-            return self.load_config(border_patterns_path)
+            raw = self.load_config(border_patterns_path) or {}
+            # Normalize legacy flat registry entries (TOP/LEFT/RIGHT/BOTTOM) into
+            # canonical registry entries with a `characters` object.
+            normalized = {}
+            for name, entry in (raw.items() if isinstance(raw, dict) else []):
+                if not isinstance(entry, dict):
+                    continue
+                # Already canonical
+                if "characters" in entry:
+                    normalized[name] = entry
+                    continue
+                # Legacy flat shape: TOP/BOTTOM/LEFT/RIGHT -> map to characters
+                top = entry.get("TOP") or entry.get("H") or "="
+                bottom = entry.get("BOTTOM") or top
+                left = entry.get("LEFT") or entry.get("V") or "|"
+                right = entry.get("RIGHT") or left
+                normalized[name] = {
+                    "name": name,
+                    "characters": {
+                        "TL": "+",
+                        "TR": "+",
+                        "BL": "+",
+                        "BR": "+",
+                        "H": top,
+                        "V": left,
+                        "X": entry.get("X", " "),
+                    },
+                    "thickness": entry.get("thickness", 1),
+                    "padding": entry.get("padding", {"top": 0, "right": 0, "bottom": 0, "left": 0}),
+                    "visibilityMode": entry.get("visibilityMode", "always"),
+                }
+            return normalized
         except FileNotFoundError:
             if getattr(self, 'verbose', False):
                 print(f"[ConfigLoader VERBOSE] BORDER_PATTERNS config not found.")

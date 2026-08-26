@@ -1,7 +1,0 @@
-menu_id: menu_tree
-title: Menu Tree
-description: Canonical menu tree placeholder
-items:
-  - key: 1
-    label: Open main menu
-    action: open_menu:menu_main

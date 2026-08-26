@@ -1,8 +1,0 @@
-menu_id: menu_tuilkit_config
-title: tUilKit Colour Key Defaults
-colour_keys:
-  info: '!info'
-  proc: '!proc'
-  done: '!done'
-  warn: '!warn'
-  error: '!error'

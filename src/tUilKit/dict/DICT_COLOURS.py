@@ -1,4 +1,4 @@
-# Lib/site-packages/tUilKit/dict/DICT_COLOURS.py
+﻿# Lib/site-packages/tUilKit/dict/DICT_COLOURS.py
 """
     This module defines a dictionary of RGB colour ANSI sequences for use in terminal applications.
     It includes a wide range of colours, categorized into brights, lights, darks, browns, and shades.
@@ -78,4 +78,5 @@ RGB = {
     'SNOW'           :'255;250;250m',
     'WHITE'          :'255;255;255m',
 }
+
 
