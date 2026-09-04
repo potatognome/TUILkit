@@ -3,7 +3,11 @@ Contains functions for log files and displaying text output in the terminal usin
 """
 
 import os
-from datetime import datetime
+import uuid
+from collections import deque
+from datetime import datetime, timezone
+from dataclasses import dataclass, field
+from typing import Any, Dict, Iterable, List, Optional
 from tUilKit.dict.DICT_COLOURS import RGB
 from tUilKit.dict.DICT_CODES import ESCAPES, COMMANDS
 from tUilKit.interfaces.logger_interface import LoggerInterface
@@ -70,6 +74,148 @@ except Exception:
     config_loader = None
     LOG_FILES = {}
     TUILKIT_SESSION_LOG = None
+
+
+@dataclass
+class LogEntry:
+    event_id: str
+    timestamp_utc: str
+    local_timestamp: str
+    severity: str
+    verbosity: str
+    category: str
+    subcategory: str = ""
+    app_id: str = "tuilkit"
+    component: str = "logger"
+    module: str = ""
+    session_id: str = ""
+    correlation_id: str = ""
+    parent_event_id: str = ""
+    source_layer: str = "tuilkit"
+    target: str = "terminal"
+    file_path: str = ""
+    message: str = ""
+    raw_message: str = ""
+    rendered_text: str = ""
+    palette_key: str = ""
+    palette_version: str = "unknown"
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    output_targets: List[str] = field(default_factory=list)
+    dedupe_key: str = ""
+
+    @staticmethod
+    def normalize_metadata(metadata: Optional[Dict[str, Any]] = None, **overrides: Any) -> Dict[str, Any]:
+        """Normalize metadata keys to the canonical schema used by tUilKit."""
+        raw = {} if metadata is None else dict(metadata)
+        for key, value in overrides.items():
+            if value is not None:
+                raw[key] = value
+
+        alias_map = {
+            "session": "session_id",
+            "session_id": "session_id",
+            "trace_id": "correlation_id",
+            "correlation_id": "correlation_id",
+            "level": "severity",
+            "severity": "severity",
+            "log_level": "verbosity",
+            "verbosity": "verbosity",
+            "logger_name": "category",
+            "category": "category",
+            "output_target": "target",
+            "target": "target",
+            "origin": "source_layer",
+            "source_layer": "source_layer",
+            "app": "app_id",
+            "app_id": "app_id",
+        }
+
+        normalized: Dict[str, Any] = {}
+        for key, value in raw.items():
+            if value is None:
+                continue
+            canonical = alias_map.get(str(key), str(key))
+            if canonical == "severity" and isinstance(value, str):
+                normalized[canonical] = value.upper()
+            elif canonical == "verbosity" and isinstance(value, str):
+                normalized[canonical] = value.upper()
+            else:
+                normalized[canonical] = value
+        return normalized
+
+    @classmethod
+    def from_message(
+        cls,
+        message: Any,
+        *,
+        category: str = "default",
+        severity: Optional[str] = None,
+        verbosity: Optional[str] = None,
+        app_id: Optional[str] = None,
+        component: str = "logger",
+        module: str = "",
+        session_id: Optional[str] = None,
+        correlation_id: Optional[str] = None,
+        source_layer: str = "tuilkit",
+        target: str = "terminal",
+        file_path: str = "",
+        output_targets: Optional[Iterable[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        palette_key: str = "",
+        palette_version: str = "unknown",
+        parent_event_id: str = "",
+    ) -> "LogEntry":
+        normalized_meta = cls.normalize_metadata(metadata or {})
+        ts = datetime.now(timezone.utc)
+        timestamp_utc = ts.strftime("%Y-%m-%dT%H:%M:%SZ")
+        local_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        event_id = str(uuid.uuid4())
+        entry_msg = "" if message is None else str(message)
+        resolved_severity = (severity or normalized_meta.get("severity") or "INFO").upper()
+        resolved_verbosity = (verbosity or normalized_meta.get("verbosity") or "STANDARD").upper()
+        resolved_session = session_id or normalized_meta.get("session_id") or ""
+        resolved_correlation = correlation_id or normalized_meta.get("correlation_id") or resolved_session
+        resolved_app = app_id or normalized_meta.get("app_id") or "tuilkit"
+        resolved_target = target or normalized_meta.get("target") or "terminal"
+        resolved_source = source_layer or normalized_meta.get("source_layer") or "tuilkit"
+        resolved_targets = list(output_targets) if output_targets else []
+        dedupe_key = "|".join(
+            filter(None, [
+                resolved_app,
+                resolved_session,
+                resolved_correlation,
+                category,
+                resolved_severity,
+                entry_msg,
+            ])
+        )
+        return cls(
+            event_id=event_id,
+            timestamp_utc=timestamp_utc,
+            local_timestamp=local_timestamp,
+            severity=resolved_severity,
+            verbosity=resolved_verbosity,
+            category=category,
+            subcategory="",
+            app_id=resolved_app,
+            component=component,
+            module=module,
+            session_id=resolved_session,
+            correlation_id=resolved_correlation,
+            parent_event_id=parent_event_id,
+            source_layer=resolved_source,
+            target=resolved_target,
+            file_path=file_path,
+            message=entry_msg,
+            raw_message=entry_msg,
+            rendered_text=entry_msg,
+            palette_key=palette_key,
+            palette_version=palette_version,
+            metadata=normalized_meta,
+            output_targets=resolved_targets,
+            dedupe_key=dedupe_key,
+        )
+
 
 class ColourManager(ColourInterface):
     def __init__(self, colour_config: dict):
@@ -283,6 +429,12 @@ class Logger(LoggerInterface):
     def __init__(self, colour_manager: ColourManager, log_files=None):
         self.Colour_Mgr = colour_manager
         self._log_queue = []
+        self.event_history = deque(maxlen=1000)
+        self.last_log_entry = None
+        self.app_id = os.environ.get("TUILKIT_APP_ID", "tuilkit")
+        self.session_id = os.environ.get("TUILKIT_SESSION_ID") or str(uuid.uuid4())
+        self.correlation_id = os.environ.get("TUILKIT_CORRELATION_ID") or self.session_id
+        self.source_layer = "tuilkit"
         self.dual_logging = bool(os.environ.get("TUILKIT_DUAL_LOGGING", "1") == "1")
         if config_loader is not None:
             self.LOG_KEYS = config_loader.global_config.get("LOG_CATEGORIES", {
@@ -310,6 +462,42 @@ class Logger(LoggerInterface):
             self.log_files = log_files or copy.deepcopy(LOG_FILES)
         # Clean the session log on initialization to ensure it only contains the current execution
         self._clean_session_log()
+
+    @staticmethod
+    def normalize_metadata(metadata=None, **overrides):
+        return LogEntry.normalize_metadata(metadata, **overrides)
+
+    def create_log_entry(self, message: Any, *, category: str = "default", severity: Optional[str] = None,
+                         verbosity: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None,
+                         app_id: Optional[str] = None, component: str = "logger", module: str = "",
+                         session_id: Optional[str] = None, correlation_id: Optional[str] = None,
+                         source_layer: str = "tuilkit", target: str = "terminal", file_path: str = "",
+                         output_targets: Optional[Iterable[str]] = None, palette_key: str = "",
+                         palette_version: str = "unknown", parent_event_id: str = "") -> LogEntry:
+        resolved_meta = self.normalize_metadata(metadata)
+        resolved_meta.setdefault("app_id", app_id or self.app_id)
+        resolved_meta.setdefault("session_id", session_id or self.session_id)
+        resolved_meta.setdefault("correlation_id", correlation_id or self.correlation_id)
+        resolved_meta.setdefault("source_layer", source_layer or self.source_layer)
+        return LogEntry.from_message(
+            message,
+            category=category,
+            severity=severity,
+            verbosity=verbosity,
+            app_id=resolved_meta.get("app_id"),
+            component=component,
+            module=module,
+            session_id=resolved_meta.get("session_id"),
+            correlation_id=resolved_meta.get("correlation_id"),
+            source_layer=resolved_meta.get("source_layer"),
+            target=target,
+            file_path=file_path,
+            output_targets=output_targets,
+            metadata=resolved_meta,
+            palette_key=palette_key,
+            palette_version=palette_version,
+            parent_event_id=parent_event_id,
+        )
 
     def _clean_session_log(self):
         """
@@ -356,7 +544,7 @@ class Logger(LoggerInterface):
         else:
             return "", ""
 
-    def log_message(self, message: str, log_files = None, end: str = "\n", log_to: str = "both", time_stamp: bool = True, dual_log: 'bool | None' = None):
+    def log_message(self, message: str, log_files = None, end: str = "\n", log_to: str = "both", time_stamp: bool = True, dual_log: 'bool | None' = None, entry: Optional[LogEntry] = None):
         """
         log_files: list of str or str or None
         log_to: "both", "file", "term", "queue"
@@ -366,6 +554,14 @@ class Logger(LoggerInterface):
             log_files = [log_files]
         elif log_files is None:
             log_files = []
+
+        if entry is not None:
+            self.last_log_entry = entry
+            self.event_history.append(entry)
+            if not entry.output_targets and log_files:
+                entry.output_targets = list(log_files)
+            if entry.file_path == "" and log_files:
+                entry.file_path = log_files[0]
 
         if time_stamp:
             date, time = self.split_time_string(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
@@ -414,7 +610,7 @@ class Logger(LoggerInterface):
             # Remove flushed messages
             self._log_queue = [item for item in self._log_queue if item[1] != log_file]
 
-    def colour_log(self, *args, category="default", spacer=0, log_files=None, end="\n", log_to="both", time_stamp=True):
+    def colour_log(self, *args, category="default", spacer=0, log_files=None, end="\n", log_to="both", time_stamp=True, metadata=None, severity=None, verbosity=None):
         # Exposed for external use in tUilKit: Use to replace print(f"") with colored, timestamped logging.
         category_files = self._get_log_files(category)
         if log_files is None:
@@ -423,6 +619,21 @@ class Logger(LoggerInterface):
             if isinstance(log_files, str):
                 log_files = [log_files]
             effective_log_files = list(set(category_files + log_files))
+
+        rendered_message = " ".join(str(arg) for arg in args)
+        entry = self.create_log_entry(
+            rendered_message,
+            category=category,
+            severity=severity,
+            verbosity=verbosity,
+            metadata=metadata,
+            source_layer=self.source_layer,
+            target=log_to,
+            file_path=effective_log_files[0] if effective_log_files else "",
+            output_targets=effective_log_files,
+            component="logger",
+            module="output.colour_log",
+        )
         if time_stamp:
             date, time = self.split_time_string(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             prefix = ("!date", date, "!time", time)
@@ -432,8 +643,11 @@ class Logger(LoggerInterface):
             coloured_message = self.Colour_Mgr.colour_fstr(*prefix, f"{' ' * spacer}", *args)
         else:
             coloured_message = self.Colour_Mgr.colour_fstr(*prefix, *args)
+        entry.rendered_text = coloured_message
+        entry.message = rendered_message
+        entry.raw_message = rendered_message
         # Pass time_stamp=False so log_message does not add its own (uncoloured) timestamp
-        self.log_message(coloured_message, log_files=effective_log_files, end=end, log_to=log_to, time_stamp=False)
+        self.log_message(coloured_message, log_files=effective_log_files, end=end, log_to=log_to, time_stamp=False, entry=entry)
 
     def colour_log_text(self, message: str, log_files=None, log_to="both", time_stamp=True):
         if time_stamp:
@@ -444,7 +658,7 @@ class Logger(LoggerInterface):
         coloured_message = prefix + self.Colour_Mgr.interpret_codes(message)
         self.log_message(coloured_message, log_files=log_files, log_to=log_to, time_stamp=False)
 
-    def log_exception(self, description: str, exception: Exception, category="error", log_files=None, log_to: str = "both") -> None:
+    def log_exception(self, description: str, exception: Exception, category="error", log_files=None, log_to: str = "both", metadata=None) -> None:
         # Exposed for external use in tUilKit: Use for logging exceptions with colored formatting.
         category_files = self._get_log_files(category)
         if log_files is None:
@@ -453,9 +667,9 @@ class Logger(LoggerInterface):
             if isinstance(log_files, str):
                 log_files = [log_files]
             effective_log_files = list(set(category_files + log_files))
-        self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to)
-        self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to)
-        self.colour_log("!error", "UNEXPECTED ERROR:", "!info", description, "!error", str(exception), log_files=effective_log_files, log_to=log_to)
+        self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to, metadata=metadata)
+        self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to, metadata=metadata)
+        self.colour_log("!error", "UNEXPECTED ERROR:", "!info", description, "!error", str(exception), log_files=effective_log_files, log_to=log_to, severity="ERROR", metadata=metadata)
 
     def log_done(self, log_files = None, end: str = "\n", log_to: str = "both", time_stamp=True):
         self.colour_log("!done", "Done!", category="default", log_files=log_files, end=end, log_to=log_to, time_stamp=time_stamp)

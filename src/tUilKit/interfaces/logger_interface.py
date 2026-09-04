@@ -21,6 +21,19 @@ class LoggerInterface(ABC):
     def log_exception(self, description: str, exception: Exception, log_files = None) -> None:
         pass
 
+    @staticmethod
+    @abstractmethod
+    def normalize_metadata(metadata=None, **overrides):
+        pass
+
+    @abstractmethod
+    def create_log_entry(self, message, *, category="default", severity=None, verbosity=None,
+                         metadata=None, app_id=None, component="logger", module="",
+                         session_id=None, correlation_id=None, source_layer="tuilkit",
+                         target="terminal", file_path="", output_targets=None,
+                         palette_key="", palette_version="unknown", parent_event_id=""):
+        pass
+
     @abstractmethod
     def log_done(self, log_files = None, end: str = "\n") -> None:
         pass
