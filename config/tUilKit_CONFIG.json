@@ -6,9 +6,7 @@
         "AUTHOR": "Daniel Austin <the.potato.gnome@gmail.com>",
         "VERSION": "0.6.3",
         "MAIN_ENTRY_POINT": "src/tUilKit/__init__.py",
-        "COLOUR_FSTR": "!project",
         "LICENSE": "MIT",
-        "BUILD_TYPE": "",
         "PROJECT_TYPE": "Core",
         "PROJECT_ROLE": "Foundational Substrate",
         "PROJECT_INTERFACES": [
@@ -18,9 +16,9 @@
         ]
     },
     "ROOTS": {
-        "PROJECT": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit",
+        "PROJECT": "C:/Repository/Daniel/dev_local/tUilKit",
         "WORKSPACE": "C:/Repository/Daniel/dev_local/Prismata",
-        "TUILKit": "C:/Repository/Daniel/dev_local/Prismata/Projects/Core/tUilKit"
+        "TUILKit": "C:/Repository/Daniel/dev_local/tUilKit"
     },
     "ROOT_MODES": {
         "CONFIG": "workspace",
@@ -33,15 +31,15 @@
         "TESTS_OUTPUTS": "workspace"
     },
     "PATHS": {
+        "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/",
         "CONFIG": ".workspace/.projects_config/",
         "LOGS": ".workspace/.logs/tUilKit/",
         "INPUTS": ".workspace/.projects_data/inputs/tUilKit/",
         "OUTPUTS": ".workspace/.projects_data/outputs/tUilKit/",
-        "TESTS_CONFIG": ".workspace/.tests_config/",
-        "TESTS_LOGS": ".workspace/.tests_logs/",
-        "TESTS_INPUTS": ".workspace/.tests_data/inputs/tUilKit/",
-        "TESTS_OUTPUTS": ".workspace/.tests_data/outputs/tUilKit/",
-        "GLOBAL_SHARED.d": ".workspace/.projects_config/GLOBAL_SHARED.d/"
+        "TESTS_CONFIG": ".workspace/tests/.tests_config/",
+        "TESTS_LOGS": ".workspace/tests/.tests_logs/",
+        "TESTS_INPUTS": ".workspace/tests/.tests_data/inputs/tUilKit/",
+        "TESTS_OUTPUTS": ".workspace/tests/.tests_data/outputs/tUilKit/"
     },
     "ALT_CONFIG": {
         "ENABLED": true,
