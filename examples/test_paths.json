@@ -1,11 +1,14 @@
 {
   "project_name": "tUilKit",
+  "config_file": "C:\\Repository\\Daniel\\dev_local\\tUilKit\\config\\tUilKit_CONFIG.json",
   "tuilkit_config_file": "C:\\Repository\\Daniel\\dev_local\\tUilKit\\config\\tUilKit_CONFIG.json",
+  "examples_folder": "C:\\Repository\\Daniel\\dev_local\\tUilKit\\examples",
   "project_root": "C:\\Repository\\Daniel\\dev_local\\tUilKit",
   "workspace_root": "C:\\Repository\\Daniel\\dev_local\\Prismata",
   "test_logs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\tests\\.tests_logs",
-  "tests_config_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.projects_config",
+  "tests_config_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\tests\\.tests_config",
   "config_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.projects_config",
+  "logs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\.logs\\tUilKit",
   "tests_inputs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\tests\\.tests_data\\inputs\\tUilKit",
   "tests_outputs_folder": "C:\\Repository\\Daniel\\dev_local\\Prismata\\.workspace\\tests\\.tests_data\\outputs\\tUilKit"
 }

@@ -55,3 +55,4 @@ build/
 .git_archived_*
 *.bak*
 *.bak*
+examples/test_paths.json
