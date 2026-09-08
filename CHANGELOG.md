@@ -10,6 +10,7 @@ All notable changes to this project are documented in this file.
 ### Changed
 - Standardized AI-assisted contribution workflow in `.github/copilot-instructions.md` and `README.md` with explicit quality-gate guidance.
 - Synchronized project version references across release metadata files.
+- Aligned `LoggerInterface` signatures with the current `Logger` implementation and updated neutral logger output to use `!reset`.
 
 ## 0.6.1 - 2026-06-08
 

@@ -11,6 +11,8 @@ tUilKit
     - Added `.github/ai-prompt-wrapper.md` with reusable request variants.
     - Added `.github/pull_request_template.md` to capture contract, test, and docs/version evidence.
     - Added `scripts/ai_quality_gate.py` for a lightweight manual pre-merge quality gate.
+- **Logger contract alignment**:
+    - Synced `LoggerInterface` with the current `Logger` implementation and tightened neutral logging output to use `!reset`.
 
 ## Recent Enhancements (v0.6.1)
 
@@ -234,4 +236,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgements
 - Thanks to everyone who contributed to this project.
-

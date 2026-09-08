@@ -669,7 +669,7 @@ class Logger(LoggerInterface):
             effective_log_files = list(set(category_files + log_files))
         self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to, metadata=metadata)
         self.colour_log("", log_files=effective_log_files, time_stamp=False, log_to=log_to, metadata=metadata)
-        self.colour_log("!error", "UNEXPECTED ERROR:", "!info", description, "!error", str(exception), log_files=effective_log_files, log_to=log_to, severity="ERROR", metadata=metadata)
+        self.colour_log("!error", "UNEXPECTED ERROR:", "!reset", description, "!error", str(exception), log_files=effective_log_files, log_to=log_to, severity="ERROR", metadata=metadata)
 
     def log_done(self, log_files = None, end: str = "\n", log_to: str = "both", time_stamp=True):
         self.colour_log("!done", "Done!", category="default", log_files=log_files, end=end, log_to=log_to, time_stamp=time_stamp)
@@ -680,7 +680,7 @@ class Logger(LoggerInterface):
             msg = message % args if args else str(message)
         except Exception:
             msg = str(message)
-        self.colour_log("!info", msg, category="default", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
+        self.colour_log("!reset", msg, category="default", log_files=kwargs.get("log_files"), log_to=kwargs.get("log_to", "both"))
 
     def error(self, message: str, *args, **kwargs):
         try:
