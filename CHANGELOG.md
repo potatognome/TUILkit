@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.7.1 - 2026-09-08
+
+### Changed
+- Completed the latest logging updates for `tUilKit` and aligned release documentation with the refreshed logging behavior.
+- Synchronized version metadata to `0.7.1` across packaging and project configuration files.
+
 ## 0.6.3 - 2026-07-17
 
 ### Added
